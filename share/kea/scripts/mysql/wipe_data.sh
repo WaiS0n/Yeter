@@ -1,0 +1,122 @@
+#!/bin/sh
+
+# Copyright (C) 2019-2023 Internet Systems Consortium, Inc. ("ISC")
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# This script is primarily used for MySQL unit tests, which need to
+# ensure an empty, but schema correct database for each test.  It
+# deletes ALL transient data from an existing Kea MySQL schema,
+# including leases, reservations, etc... Use at your own peril.
+# Reference tables will be left in-tact.
+
+# shellcheck disable=SC1091
+# SC1091: Not following: ... was not specified as input (see shellcheck -x).
+
+# Exit with error if commands exit with non-zero and if undefined variables are
+# used.
+set -eu
+
+# shellcheck disable=SC2034
+# SC2034: ... appears unused. Verify use (or export if used externally).
+prefix="/usr/local"
+
+# Include utilities. Use installed version if available and
+# use build version if it isn't.
+if test -f "${prefix}/share/kea/scripts/admin-utils.sh"; then
+    . "${prefix}/share/kea/scripts/admin-utils.sh"
+else
+    . "/usr/obj/usr/ports/net/kea/work/kea-2.4.1/src/bin/admin/admin-utils.sh"
+fi
+
+# First argument must be the expected schema version <major>.<minor>
+# Check if it's passed at all.
+if [ "$#" -lt "1" ]; then
+    printf "Required at least one parameter: schema version number, e.g. 7.0\n"
+    exit 1
+fi
+exp_version="$1"
+shift
+
+# Remaining arguments are used as mysql command line arguments
+
+# If the existing schema doesn't match, the fail
+VERSION=$(mysql_version "$@")
+if [ "$VERSION" = "" ]; then
+    printf "Cannot wipe data, schema version could not be detected.\n"
+    exit 1
+fi
+
+if [ "$VERSION" != "$exp_version" ]; then
+    printf 'Cannot wipe data, wrong schema version. '
+    printf 'Expected version %s, found %s.\n' "$exp_version" "$VERSION"
+    exit 1
+fi
+
+# Delete transient data from tables.  Per MySQL documentation TRUNCATE
+# destroys and there recreates tables.  As schema updates are typically
+# very slow, we're use deletes here.  We turn off foreign key checks to
+# worrying about table order.  We also set the session variable
+# disable_audit to turn off  Back audit procedures, to avoid attempting
+# to create entries for deleted records.
+mysql "$@" <<EOF
+START TRANSACTION;
+SET SESSION FOREIGN_KEY_CHECKS = 0;
+SET @disable_audit = 1;
+
+DELETE FROM dhcp4_global_parameter;
+DELETE FROM dhcp4_global_parameter_server;
+DELETE FROM dhcp4_option_def;
+DELETE FROM dhcp4_option_def_server;
+DELETE FROM dhcp4_options;
+DELETE FROM dhcp4_options_server;
+DELETE FROM dhcp4_pool;
+# preserve special server "all"
+DELETE FROM dhcp4_server WHERE tag != "all";
+DELETE FROM dhcp4_shared_network;
+DELETE FROM dhcp4_shared_network_server;
+DELETE FROM dhcp4_subnet;
+DELETE FROM dhcp4_subnet_server;
+DELETE FROM dhcp4_audit_revision;
+DELETE FROM dhcp4_audit;
+DELETE FROM dhcp4_client_class;
+DELETE FROM dhcp4_client_class_order;
+DELETE FROM dhcp4_client_class_dependency;
+DELETE FROM dhcp4_client_class_server;
+DELETE FROM dhcp6_global_parameter;
+DELETE FROM dhcp6_global_parameter_server;
+DELETE FROM dhcp6_option_def;
+DELETE FROM dhcp6_option_def_server;
+DELETE FROM dhcp6_options;
+DELETE FROM dhcp6_options_server;
+DELETE FROM dhcp6_pd_pool;
+DELETE FROM dhcp6_pool;
+# preserve special server "all"
+DELETE FROM dhcp6_server WHERE tag != "all";
+DELETE FROM dhcp6_shared_network;
+DELETE FROM dhcp6_shared_network_server;
+DELETE FROM dhcp6_subnet;
+DELETE FROM dhcp6_subnet_server;
+DELETE FROM dhcp6_audit;
+DELETE FROM dhcp6_audit_revision;
+DELETE FROM dhcp6_client_class;
+DELETE FROM dhcp6_client_class_order;
+DELETE FROM dhcp6_client_class_dependency;
+DELETE FROM dhcp6_client_class_server;
+DELETE FROM hosts;
+DELETE FROM ipv6_reservations;
+DELETE FROM lease4;
+DELETE FROM lease4_stat;
+DELETE FROM lease4_pool_stat;
+DELETE FROM lease6;
+DELETE FROM lease6_stat;
+DELETE FROM lease6_pool_stat;
+DELETE FROM logs;
+DELETE FROM lease4_stat_by_client_class;
+DELETE FROM lease6_stat_by_client_class;
+DELETE FROM lease6_relay_id;
+DELETE FROM lease6_remote_id;
+COMMIT;
+EOF

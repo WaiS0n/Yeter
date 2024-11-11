@@ -1,0 +1,132 @@
+require '_h2ph_pre.ph';
+
+no warnings qw(redefine misc);
+
+eval 'sub CURSES_WACS_ARRAY () { &_nc_wacs;}' unless defined(&CURSES_WACS_ARRAY);
+eval 'sub CURSES_WACS_SYMBOLS () {1;}' unless defined(&CURSES_WACS_SYMBOLS);
+eval 'sub DIALOG_PATCHDATE () {20210117;}' unless defined(&DIALOG_PATCHDATE);
+eval 'sub DIALOG_VERSION () {"1.3";}' unless defined(&DIALOG_VERSION);
+unless(defined(&GCC_NORETURN)) {
+    eval 'sub GCC_NORETURN () { &__attribute__(( &noreturn));}' unless defined(&GCC_NORETURN);
+}
+eval 'sub GCC_PRINTF () {1;}' unless defined(&GCC_PRINTF);
+unless(defined(&GCC_PRINTFLIKE)) {
+    eval 'sub GCC_PRINTFLIKE {
+        my($fmt,$var) = @_;
+	    eval q( &__attribute__(( &format( &printf,$fmt,$var))));
+    }' unless defined(&GCC_PRINTFLIKE);
+}
+eval 'sub GCC_SCANF () {1;}' unless defined(&GCC_SCANF);
+unless(defined(&GCC_SCANFLIKE)) {
+    eval 'sub GCC_SCANFLIKE {
+        my($fmt,$var) = @_;
+	    eval q( &__attribute__(( &format( &scanf,$fmt,$var))));
+    }' unless defined(&GCC_SCANFLIKE);
+}
+unless(defined(&GCC_UNUSED)) {
+    eval 'sub GCC_UNUSED () { &__attribute__(( &unused));}' unless defined(&GCC_UNUSED);
+}
+eval 'sub HAVE_ALLOCA () {1;}' unless defined(&HAVE_ALLOCA);
+eval 'sub HAVE_BTOWC () {1;}' unless defined(&HAVE_BTOWC);
+eval 'sub HAVE_COLOR () {1;}' unless defined(&HAVE_COLOR);
+eval 'sub HAVE_DIRENT_H () {1;}' unless defined(&HAVE_DIRENT_H);
+eval 'sub HAVE_DLG_FORMBOX () {1;}' unless defined(&HAVE_DLG_FORMBOX);
+eval 'sub HAVE_DLG_GAUGE () {1;}' unless defined(&HAVE_DLG_GAUGE);
+eval 'sub HAVE_DLG_MIXEDFORM () {1;}' unless defined(&HAVE_DLG_MIXEDFORM);
+eval 'sub HAVE_DLG_TAILBOX () {1;}' unless defined(&HAVE_DLG_TAILBOX);
+eval 'sub HAVE_DLG_TRACE () {1;}' unless defined(&HAVE_DLG_TRACE);
+eval 'sub HAVE_FEOF_UNLOCKED () {1;}' unless defined(&HAVE_FEOF_UNLOCKED);
+eval 'sub HAVE_FLUSHINP () {1;}' unless defined(&HAVE_FLUSHINP);
+eval 'sub HAVE_FSEEKO () {1;}' unless defined(&HAVE_FSEEKO);
+eval 'sub HAVE_GETATTRS () {1;}' unless defined(&HAVE_GETATTRS);
+eval 'sub HAVE_GETBEGX () {1;}' unless defined(&HAVE_GETBEGX);
+eval 'sub HAVE_GETBEGY () {1;}' unless defined(&HAVE_GETBEGY);
+eval 'sub HAVE_GETBEGYX () {1;}' unless defined(&HAVE_GETBEGYX);
+eval 'sub HAVE_GETCURX () {1;}' unless defined(&HAVE_GETCURX);
+eval 'sub HAVE_GETCURY () {1;}' unless defined(&HAVE_GETCURY);
+eval 'sub HAVE_GETCWD () {1;}' unless defined(&HAVE_GETCWD);
+eval 'sub HAVE_GETEGID () {1;}' unless defined(&HAVE_GETEGID);
+eval 'sub HAVE_GETEUID () {1;}' unless defined(&HAVE_GETEUID);
+eval 'sub HAVE_GETGID () {1;}' unless defined(&HAVE_GETGID);
+eval 'sub HAVE_GETMAXX () {1;}' unless defined(&HAVE_GETMAXX);
+eval 'sub HAVE_GETMAXY () {1;}' unless defined(&HAVE_GETMAXY);
+eval 'sub HAVE_GETMAXYX () {1;}' unless defined(&HAVE_GETMAXYX);
+eval 'sub HAVE_GETPAGESIZE () {1;}' unless defined(&HAVE_GETPAGESIZE);
+eval 'sub HAVE_GETPARX () {1;}' unless defined(&HAVE_GETPARX);
+eval 'sub HAVE_GETPARY () {1;}' unless defined(&HAVE_GETPARY);
+eval 'sub HAVE_GETPARYX () {1;}' unless defined(&HAVE_GETPARYX);
+eval 'sub HAVE_GETUID () {1;}' unless defined(&HAVE_GETUID);
+eval 'sub HAVE_ICONV () {1;}' unless defined(&HAVE_ICONV);
+eval 'sub HAVE_INTTYPES_H () {1;}' unless defined(&HAVE_INTTYPES_H);
+eval 'sub HAVE_LANGINFO_CODESET () {1;}' unless defined(&HAVE_LANGINFO_CODESET);
+eval 'sub HAVE_LC_MESSAGES () {1;}' unless defined(&HAVE_LC_MESSAGES);
+eval 'sub HAVE_LIMITS_H () {1;}' unless defined(&HAVE_LIMITS_H);
+eval 'sub HAVE_LOCALE_H () {1;}' unless defined(&HAVE_LOCALE_H);
+eval 'sub HAVE_MBLEN () {1;}' unless defined(&HAVE_MBLEN);
+eval 'sub HAVE_MBRLEN () {1;}' unless defined(&HAVE_MBRLEN);
+eval 'sub HAVE_MBRTOWC () {1;}' unless defined(&HAVE_MBRTOWC);
+eval 'sub HAVE_MBSTATE_T () {1;}' unless defined(&HAVE_MBSTATE_T);
+eval 'sub HAVE_MBTOWC () {1;}' unless defined(&HAVE_MBTOWC);
+eval 'sub HAVE_MEMORY_H () {1;}' unless defined(&HAVE_MEMORY_H);
+eval 'sub HAVE_MIXEDGAUGE () {1;}' unless defined(&HAVE_MIXEDGAUGE);
+eval 'sub HAVE_MKTIME () {1;}' unless defined(&HAVE_MKTIME);
+eval 'sub HAVE_MMAP () {1;}' unless defined(&HAVE_MMAP);
+eval 'sub HAVE_MUNMAP () {1;}' unless defined(&HAVE_MUNMAP);
+eval 'sub HAVE_NCURSES_H () {1;}' unless defined(&HAVE_NCURSES_H);
+eval 'sub HAVE_NL_TYPES_H () {1;}' unless defined(&HAVE_NL_TYPES_H);
+eval 'sub HAVE_PUTENV () {1;}' unless defined(&HAVE_PUTENV);
+eval 'sub HAVE_RC_FILE () {1;}' unless defined(&HAVE_RC_FILE);
+eval 'sub HAVE_RC_FILE2 () {1;}' unless defined(&HAVE_RC_FILE2);
+eval 'sub HAVE_SEARCH_H () {1;}' unless defined(&HAVE_SEARCH_H);
+eval 'sub HAVE_SETENV () {1;}' unless defined(&HAVE_SETENV);
+eval 'sub HAVE_SETLOCALE () {1;}' unless defined(&HAVE_SETLOCALE);
+eval 'sub HAVE_SIZECHANGE () {1;}' unless defined(&HAVE_SIZECHANGE);
+eval 'sub HAVE_STDDEF_H () {1;}' unless defined(&HAVE_STDDEF_H);
+eval 'sub HAVE_STDINT_H () {1;}' unless defined(&HAVE_STDINT_H);
+eval 'sub HAVE_STDLIB_H () {1;}' unless defined(&HAVE_STDLIB_H);
+eval 'sub HAVE_STPCPY () {1;}' unless defined(&HAVE_STPCPY);
+eval 'sub HAVE_STRCASECMP () {1;}' unless defined(&HAVE_STRCASECMP);
+eval 'sub HAVE_STRCHR () {1;}' unless defined(&HAVE_STRCHR);
+eval 'sub HAVE_STRDUP () {1;}' unless defined(&HAVE_STRDUP);
+eval 'sub HAVE_STRFTIME () {1;}' unless defined(&HAVE_STRFTIME);
+eval 'sub HAVE_STRINGS_H () {1;}' unless defined(&HAVE_STRINGS_H);
+eval 'sub HAVE_STRING_H () {1;}' unless defined(&HAVE_STRING_H);
+eval 'sub HAVE_STRTOUL () {1;}' unless defined(&HAVE_STRTOUL);
+eval 'sub HAVE_SYS_IOCTL_H () {1;}' unless defined(&HAVE_SYS_IOCTL_H);
+eval 'sub HAVE_SYS_PARAM_H () {1;}' unless defined(&HAVE_SYS_PARAM_H);
+eval 'sub HAVE_SYS_STAT_H () {1;}' unless defined(&HAVE_SYS_STAT_H);
+eval 'sub HAVE_SYS_TYPES_H () {1;}' unless defined(&HAVE_SYS_TYPES_H);
+eval 'sub HAVE_SYS_WAIT_H () {1;}' unless defined(&HAVE_SYS_WAIT_H);
+eval 'sub HAVE_TERMIOS_H () {1;}' unless defined(&HAVE_TERMIOS_H);
+eval 'sub HAVE_TERM_H () {1;}' unless defined(&HAVE_TERM_H);
+eval 'sub HAVE_TSEARCH () {1;}' unless defined(&HAVE_TSEARCH);
+eval 'sub HAVE_TYPE_CHTYPE () {1;}' unless defined(&HAVE_TYPE_CHTYPE);
+eval 'sub HAVE_UNCTRL_H () {1;}' unless defined(&HAVE_UNCTRL_H);
+eval 'sub HAVE_UNISTD_H () {1;}' unless defined(&HAVE_UNISTD_H);
+eval 'sub HAVE_USE_DEFAULT_COLORS () {1;}' unless defined(&HAVE_USE_DEFAULT_COLORS);
+eval 'sub HAVE_WAITPID () {1;}' unless defined(&HAVE_WAITPID);
+eval 'sub HAVE_WCHGAT () {1;}' unless defined(&HAVE_WCHGAT);
+eval 'sub HAVE_WCSRTOMBS () {1;}' unless defined(&HAVE_WCSRTOMBS);
+eval 'sub HAVE_WCSTOMBS () {1;}' unless defined(&HAVE_WCSTOMBS);
+eval 'sub HAVE_WCTOB () {1;}' unless defined(&HAVE_WCTOB);
+eval 'sub HAVE_WCTOMB () {1;}' unless defined(&HAVE_WCTOMB);
+eval 'sub HAVE_WCURSYNCUP () {1;}' unless defined(&HAVE_WCURSYNCUP);
+eval 'sub HAVE_WGETPARENT () {1;}' unless defined(&HAVE_WGETPARENT);
+eval 'sub HAVE_WGET_WCH () {1;}' unless defined(&HAVE_WGET_WCH);
+eval 'sub HAVE_WHIPTAIL () {1;}' unless defined(&HAVE_WHIPTAIL);
+eval 'sub HAVE_WSYNCUP () {1;}' unless defined(&HAVE_WSYNCUP);
+eval 'sub HAVE_XDIALOG () {1;}' unless defined(&HAVE_XDIALOG);
+eval 'sub HAVE_XDIALOG2 () {1;}' unless defined(&HAVE_XDIALOG2);
+eval 'sub ICONV_CONST () {1;}' unless defined(&ICONV_CONST);
+eval 'sub MIXEDCASE_FILENAMES () {1;}' unless defined(&MIXEDCASE_FILENAMES);
+eval 'sub NCURSES () {1;}' unless defined(&NCURSES);
+eval 'sub NEED_WCHAR_H () {1;}' unless defined(&NEED_WCHAR_H);
+eval 'sub PACKAGE () {"dialog";}' unless defined(&PACKAGE);
+eval 'sub RETSIGTYPE () { &void;}' unless defined(&RETSIGTYPE);
+eval 'sub STDC_HEADERS () {1;}' unless defined(&STDC_HEADERS);
+eval 'sub SYSTEM_NAME () {"FreeBSD";}' unless defined(&SYSTEM_NAME);
+eval 'sub TIME_WITH_SYS_TIME () {1;}' unless defined(&TIME_WITH_SYS_TIME);
+eval 'sub TYPE_CHTYPE_IS_SCALAR () {1;}' unless defined(&TYPE_CHTYPE_IS_SCALAR);
+eval 'sub USE_WIDE_CURSES () {1;}' unless defined(&USE_WIDE_CURSES);
+eval 'sub WIDEC_CURSES () {1;}' unless defined(&WIDEC_CURSES);
+1;

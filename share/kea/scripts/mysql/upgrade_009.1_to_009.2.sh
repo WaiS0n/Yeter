@@ -1,0 +1,82 @@
+#!/bin/sh
+
+# Copyright (C) 2020-2023 Internet Systems Consortium, Inc. ("ISC")
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# shellcheck disable=SC1091
+# SC1091: Not following: ... was not specified as input (see shellcheck -x).
+
+# Exit with error if commands exit with non-zero and if undefined variables are
+# used.
+set -eu
+
+# shellcheck disable=SC2034
+# SC2034: ... appears unused. Verify use (or export if used externally).
+prefix="/usr/local"
+
+# Include utilities. Use installed version if available and
+# use build version if it isn't.
+if test -f "${prefix}/share/kea/scripts/admin-utils.sh"; then
+    . "${prefix}/share/kea/scripts/admin-utils.sh"
+else
+    . "/usr/obj/usr/ports/net/kea/work/kea-2.4.1/src/bin/admin/admin-utils.sh"
+fi
+
+VERSION=$(mysql_version "$@")
+
+if [ "$VERSION" != "9.1" ]; then
+    printf 'This script upgrades 9.1 to 9.2. '
+    printf 'Reported version is %s. Skipping upgrade.\n' "${VERSION}"
+    exit 0
+fi
+
+mysql "$@" <<EOF
+-- This line starts the schema upgrade to version 9.2.
+
+# Add missing indexes (foreign keys) to the dhcp4_options table.
+ALTER TABLE dhcp4_options ADD CONSTRAINT fk_dhcp4_options_shared_network
+    FOREIGN KEY (shared_network_name)
+        REFERENCES dhcp4_shared_network(name)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE dhcp4_options ADD CONSTRAINT fk_dhcp4_options_subnet
+    FOREIGN KEY (dhcp4_subnet_id)
+        REFERENCES dhcp4_subnet(subnet_id)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE dhcp4_options ADD CONSTRAINT fk_dhcp4_options_pool
+    FOREIGN KEY (pool_id)
+        REFERENCES dhcp4_pool(id)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+# Add missing indexes (foreign keys) to the dhcp6_options table.
+ALTER TABLE dhcp6_options ADD CONSTRAINT fk_dhcp6_options_shared_network
+    FOREIGN KEY (shared_network_name)
+        REFERENCES dhcp6_shared_network(name)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE dhcp6_options ADD CONSTRAINT fk_dhcp6_options_subnet
+    FOREIGN KEY (dhcp6_subnet_id)
+        REFERENCES dhcp6_subnet(subnet_id)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE dhcp6_options ADD CONSTRAINT fk_dhcp6_options_pool
+    FOREIGN KEY (pool_id)
+        REFERENCES dhcp6_pool(id)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE dhcp6_options ADD CONSTRAINT fk_dhcp6_options_pd_pool
+    FOREIGN KEY (pd_pool_id)
+        REFERENCES dhcp6_pd_pool(id)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+# Update the schema version number.
+UPDATE schema_version
+    SET version = '9', minor = '2';
+
+# This line concludes the schema upgrade to version 9.2.
+
+EOF

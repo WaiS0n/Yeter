@@ -1,0 +1,50 @@
+require '_h2ph_pre.ph';
+
+no warnings qw(redefine misc);
+
+unless(defined(&_SYS_CDRIO_H_)) {
+    eval 'sub _SYS_CDRIO_H_ () {1;}' unless defined(&_SYS_CDRIO_H_);
+    require 'sys/ioccom.ph';
+    eval 'sub CDR_DB_RAW () {0x;}' unless defined(&CDR_DB_RAW);
+    eval 'sub CDR_DB_RAW_PQ () {0x1;}' unless defined(&CDR_DB_RAW_PQ);
+    eval 'sub CDR_DB_RAW_PW () {0x2;}' unless defined(&CDR_DB_RAW_PW);
+    eval 'sub CDR_DB_RAW_PW_R () {0x3;}' unless defined(&CDR_DB_RAW_PW_R);
+    eval 'sub CDR_DB_RES_4 () {0x4;}' unless defined(&CDR_DB_RES_4);
+    eval 'sub CDR_DB_RES_5 () {0x5;}' unless defined(&CDR_DB_RES_5);
+    eval 'sub CDR_DB_RES_6 () {0x6;}' unless defined(&CDR_DB_RES_6);
+    eval 'sub CDR_DB_VS_7 () {0x7;}' unless defined(&CDR_DB_VS_7);
+    eval 'sub CDR_DB_ROM_MODE1 () {0x8;}' unless defined(&CDR_DB_ROM_MODE1);
+    eval 'sub CDR_DB_ROM_MODE2 () {0x9;}' unless defined(&CDR_DB_ROM_MODE2);
+    eval 'sub CDR_DB_XA_MODE1 () {0xa;}' unless defined(&CDR_DB_XA_MODE1);
+    eval 'sub CDR_DB_XA_MODE2_F1 () {0xb;}' unless defined(&CDR_DB_XA_MODE2_F1);
+    eval 'sub CDR_DB_XA_MODE2_F2 () {0xc;}' unless defined(&CDR_DB_XA_MODE2_F2);
+    eval 'sub CDR_DB_XA_MODE2_MIX () {0xd;}' unless defined(&CDR_DB_XA_MODE2_MIX);
+    eval 'sub CDR_DB_RES_14 () {0xe;}' unless defined(&CDR_DB_RES_14);
+    eval 'sub CDR_DB_VS_15 () {0xf;}' unless defined(&CDR_DB_VS_15);
+    eval 'sub CDR_SESS_CDROM () {0x;}' unless defined(&CDR_SESS_CDROM);
+    eval 'sub CDR_SESS_CDI () {0x10;}' unless defined(&CDR_SESS_CDI);
+    eval 'sub CDR_SESS_CDROM_XA () {0x20;}' unless defined(&CDR_SESS_CDROM_XA);
+    eval 'sub CDR_SESS_NONE () {0x;}' unless defined(&CDR_SESS_NONE);
+    eval 'sub CDR_SESS_FINAL () {0x1;}' unless defined(&CDR_SESS_FINAL);
+    eval 'sub CDR_SESS_RESERVED () {0x2;}' unless defined(&CDR_SESS_RESERVED);
+    eval 'sub CDR_SESS_MULTI () {0x3;}' unless defined(&CDR_SESS_MULTI);
+    eval 'sub CDRIOCBLANK () { &_IOW(ord(\'c\'), 100, \'int\');}' unless defined(&CDRIOCBLANK);
+    eval 'sub CDR_B_ALL () {0x;}' unless defined(&CDR_B_ALL);
+    eval 'sub CDR_B_MIN () {0x1;}' unless defined(&CDR_B_MIN);
+    eval 'sub CDR_B_SESSION () {0x6;}' unless defined(&CDR_B_SESSION);
+    eval 'sub CDRIOCNEXTWRITEABLEADDR () { &_IOR(ord(\'c\'), 101, \'int\');}' unless defined(&CDRIOCNEXTWRITEABLEADDR);
+    eval 'sub CDRIOCINITWRITER () { &_IOW(ord(\'c\'), 102, \'int\');}' unless defined(&CDRIOCINITWRITER);
+    eval 'sub CDRIOCINITTRACK () { &_IOW(ord(\'c\'), 103, \'struct cdr_track\');}' unless defined(&CDRIOCINITTRACK);
+    eval 'sub CDRIOCSENDCUE () { &_IOW(ord(\'c\'), 104, \'struct cdr_cuesheet\');}' unless defined(&CDRIOCSENDCUE);
+    eval 'sub CDRIOCFLUSH () { &_IO(ord(\'c\'), 105);}' unless defined(&CDRIOCFLUSH);
+    eval 'sub CDRIOCFIXATE () { &_IOW(ord(\'c\'), 106, \'int\');}' unless defined(&CDRIOCFIXATE);
+    eval 'sub CDRIOCREADSPEED () { &_IOW(ord(\'c\'), 107, \'int\');}' unless defined(&CDRIOCREADSPEED);
+    eval 'sub CDRIOCWRITESPEED () { &_IOW(ord(\'c\'), 108, \'int\');}' unless defined(&CDRIOCWRITESPEED);
+    eval 'sub CDR_MAX_SPEED () {0xffff;}' unless defined(&CDR_MAX_SPEED);
+    eval 'sub CDRIOCGETBLOCKSIZE () { &_IOR(ord(\'c\'), 109, \'int\');}' unless defined(&CDRIOCGETBLOCKSIZE);
+    eval 'sub CDRIOCSETBLOCKSIZE () { &_IOW(ord(\'c\'), 110, \'int\');}' unless defined(&CDRIOCSETBLOCKSIZE);
+    eval 'sub CDRIOCGETPROGRESS () { &_IOR(ord(\'c\'), 111, \'int\');}' unless defined(&CDRIOCGETPROGRESS);
+    eval 'sub CDRIOCREADFORMATCAPS () { &_IOR(ord(\'c\'), 112, \'struct cdr_format_capacities\');}' unless defined(&CDRIOCREADFORMATCAPS);
+    eval 'sub CDRIOCFORMAT () { &_IOW(ord(\'c\'), 113, \'struct cdr_format_params\');}' unless defined(&CDRIOCFORMAT);
+}
+1;

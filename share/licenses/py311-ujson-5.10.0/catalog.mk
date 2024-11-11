@@ -1,0 +1,13 @@
+_LICENSE=BSD3CLAUSE TclTk
+_LICENSE_COMB=multi
+_LICENSE_NAME=Multiple (all of): BSD3CLAUSE TclTk
+_LICENSE_PERMS=dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS=
+_LICENSE_NAME_BSD3CLAUSE =BSD 3-clause New or Revised License
+_LICENSE_PERMS_BSD3CLAUSE =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_BSD3CLAUSE =FSF OSI COPYFREE
+_LICENSE_DISTFILES_BSD3CLAUSE =ujson-5.10.0.tar.gz
+_LICENSE_NAME_TclTk =Tcl/Tk License
+_LICENSE_PERMS_TclTk =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_TclTk =
+_LICENSE_DISTFILES_TclTk =ujson-5.10.0.tar.gz

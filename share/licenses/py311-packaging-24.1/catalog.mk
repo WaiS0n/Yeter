@@ -1,0 +1,13 @@
+_LICENSE=APACHE20 BSD2CLAUSE
+_LICENSE_COMB=dual
+_LICENSE_NAME=Dual (any of): APACHE20 BSD2CLAUSE
+_LICENSE_PERMS=dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS=
+_LICENSE_NAME_APACHE20 =Apache License 2.0
+_LICENSE_PERMS_APACHE20 =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_APACHE20 =FSF OSI
+_LICENSE_DISTFILES_APACHE20 =packaging-24.1.tar.gz
+_LICENSE_NAME_BSD2CLAUSE =BSD 2-clause Simplified License
+_LICENSE_PERMS_BSD2CLAUSE =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_BSD2CLAUSE =FSF OSI COPYFREE
+_LICENSE_DISTFILES_BSD2CLAUSE =packaging-24.1.tar.gz

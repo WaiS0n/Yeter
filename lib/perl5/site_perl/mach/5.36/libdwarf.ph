@@ -1,0 +1,193 @@
+require '_h2ph_pre.ph';
+
+no warnings qw(redefine misc);
+
+unless(defined(&_LIBDWARF_H_)) {
+    eval 'sub _LIBDWARF_H_ () {1;}' unless defined(&_LIBDWARF_H_);
+    require 'libelf.ph';
+    eval("sub DW_OBJECT_MSB () { 0; }") unless defined(&DW_OBJECT_MSB);
+    eval("sub DW_OBJECT_LSB () { 1; }") unless defined(&DW_OBJECT_LSB);
+    eval("sub DW_RANGES_ENTRY () { 0; }") unless defined(&DW_RANGES_ENTRY);
+    eval("sub DW_RANGES_ADDRESS_SELECTION () { 1; }") unless defined(&DW_RANGES_ADDRESS_SELECTION);
+    eval("sub DW_RANGES_END () { 2; }") unless defined(&DW_RANGES_END);
+    eval("sub DW_FORM_CLASS_UNKNOWN () { 0; }") unless defined(&DW_FORM_CLASS_UNKNOWN);
+    eval("sub DW_FORM_CLASS_ADDRESS () { 1; }") unless defined(&DW_FORM_CLASS_ADDRESS);
+    eval("sub DW_FORM_CLASS_BLOCK () { 2; }") unless defined(&DW_FORM_CLASS_BLOCK);
+    eval("sub DW_FORM_CLASS_CONSTANT () { 3; }") unless defined(&DW_FORM_CLASS_CONSTANT);
+    eval("sub DW_FORM_CLASS_EXPRLOC () { 4; }") unless defined(&DW_FORM_CLASS_EXPRLOC);
+    eval("sub DW_FORM_CLASS_FLAG () { 5; }") unless defined(&DW_FORM_CLASS_FLAG);
+    eval("sub DW_FORM_CLASS_LINEPTR () { 6; }") unless defined(&DW_FORM_CLASS_LINEPTR);
+    eval("sub DW_FORM_CLASS_LOCLISTPTR () { 7; }") unless defined(&DW_FORM_CLASS_LOCLISTPTR);
+    eval("sub DW_FORM_CLASS_MACPTR () { 8; }") unless defined(&DW_FORM_CLASS_MACPTR);
+    eval("sub DW_FORM_CLASS_RANGELISTPTR () { 9; }") unless defined(&DW_FORM_CLASS_RANGELISTPTR);
+    eval("sub DW_FORM_CLASS_REFERENCE () { 10; }") unless defined(&DW_FORM_CLASS_REFERENCE);
+    eval("sub DW_FORM_CLASS_STRING () { 11; }") unless defined(&DW_FORM_CLASS_STRING);
+    unless(defined(&DW_FRAME_HIGHEST_NORMAL_REGISTER)) {
+	eval 'sub DW_FRAME_HIGHEST_NORMAL_REGISTER () {63;}' unless defined(&DW_FRAME_HIGHEST_NORMAL_REGISTER);
+    }
+    eval 'sub DW_FRAME_RA_COL () {( &DW_FRAME_HIGHEST_NORMAL_REGISTER + 1);}' unless defined(&DW_FRAME_RA_COL);
+    eval 'sub DW_FRAME_STATIC_LINK () {( &DW_FRAME_HIGHEST_NORMAL_REGISTER + 2);}' unless defined(&DW_FRAME_STATIC_LINK);
+    unless(defined(&DW_FRAME_LAST_REG_NUM)) {
+	eval 'sub DW_FRAME_LAST_REG_NUM () {( &DW_FRAME_HIGHEST_NORMAL_REGISTER + 3);}' unless defined(&DW_FRAME_LAST_REG_NUM);
+    }
+    unless(defined(&DW_FRAME_REG_INITIAL_VALUE)) {
+	eval 'sub DW_FRAME_REG_INITIAL_VALUE () { &DW_FRAME_SAME_VAL;}' unless defined(&DW_FRAME_REG_INITIAL_VALUE);
+    }
+    eval 'sub DW_FRAME_UNDEFINED_VAL () {1034;}' unless defined(&DW_FRAME_UNDEFINED_VAL);
+    eval 'sub DW_FRAME_SAME_VAL () {1035;}' unless defined(&DW_FRAME_SAME_VAL);
+    eval 'sub DW_FRAME_CFA_COL3 () {1436;}' unless defined(&DW_FRAME_CFA_COL3);
+    eval 'sub DW_EXPR_OFFSET () {0;}' unless defined(&DW_EXPR_OFFSET);
+    eval 'sub DW_EXPR_VAL_OFFSET () {1;}' unless defined(&DW_EXPR_VAL_OFFSET);
+    eval 'sub DW_EXPR_EXPRESSION () {2;}' unless defined(&DW_EXPR_EXPRESSION);
+    eval 'sub DW_EXPR_VAL_EXPRESSION () {3;}' unless defined(&DW_EXPR_VAL_EXPRESSION);
+    eval 'sub DW_FRAME_CFA_COL () {0;}' unless defined(&DW_FRAME_CFA_COL);
+    unless(defined(&DW_REG_TABLE_SIZE)) {
+	eval 'sub DW_REG_TABLE_SIZE () {66;}' unless defined(&DW_REG_TABLE_SIZE);
+    }
+    eval("sub DW_DLA_ABBREV () { 0; }") unless defined(&DW_DLA_ABBREV);
+    eval("sub DW_DLA_ADDR () { 1; }") unless defined(&DW_DLA_ADDR);
+    eval("sub DW_DLA_ARANGE () { 2; }") unless defined(&DW_DLA_ARANGE);
+    eval("sub DW_DLA_ATTR () { 3; }") unless defined(&DW_DLA_ATTR);
+    eval("sub DW_DLA_BLOCK () { 4; }") unless defined(&DW_DLA_BLOCK);
+    eval("sub DW_DLA_BOUNDS () { 5; }") unless defined(&DW_DLA_BOUNDS);
+    eval("sub DW_DLA_CIE () { 6; }") unless defined(&DW_DLA_CIE);
+    eval("sub DW_DLA_DEBUG () { 7; }") unless defined(&DW_DLA_DEBUG);
+    eval("sub DW_DLA_DIE () { 8; }") unless defined(&DW_DLA_DIE);
+    eval("sub DW_DLA_ELLIST () { 9; }") unless defined(&DW_DLA_ELLIST);
+    eval("sub DW_DLA_ERROR () { 10; }") unless defined(&DW_DLA_ERROR);
+    eval("sub DW_DLA_FDE () { 11; }") unless defined(&DW_DLA_FDE);
+    eval("sub DW_DLA_FRAME_BLOCK () { 12; }") unless defined(&DW_DLA_FRAME_BLOCK);
+    eval("sub DW_DLA_FRAME_OP () { 13; }") unless defined(&DW_DLA_FRAME_OP);
+    eval("sub DW_DLA_FUNC () { 14; }") unless defined(&DW_DLA_FUNC);
+    eval("sub DW_DLA_GLOBAL () { 15; }") unless defined(&DW_DLA_GLOBAL);
+    eval("sub DW_DLA_LINE () { 16; }") unless defined(&DW_DLA_LINE);
+    eval("sub DW_DLA_LINEBUF () { 17; }") unless defined(&DW_DLA_LINEBUF);
+    eval("sub DW_DLA_LIST () { 18; }") unless defined(&DW_DLA_LIST);
+    eval("sub DW_DLA_LOC () { 19; }") unless defined(&DW_DLA_LOC);
+    eval("sub DW_DLA_LOCDESC () { 20; }") unless defined(&DW_DLA_LOCDESC);
+    eval("sub DW_DLA_LOC_BLOCK () { 21; }") unless defined(&DW_DLA_LOC_BLOCK);
+    eval("sub DW_DLA_RANGES () { 22; }") unless defined(&DW_DLA_RANGES);
+    eval("sub DW_DLA_STRING () { 23; }") unless defined(&DW_DLA_STRING);
+    eval("sub DW_DLA_SUBSCR () { 24; }") unless defined(&DW_DLA_SUBSCR);
+    eval("sub DW_DLA_TYPE () { 25; }") unless defined(&DW_DLA_TYPE);
+    eval("sub DW_DLA_TYPENAME () { 26; }") unless defined(&DW_DLA_TYPENAME);
+    eval("sub DW_DLA_VAR () { 27; }") unless defined(&DW_DLA_VAR);
+    eval("sub DW_DLA_WEAK () { 28; }") unless defined(&DW_DLA_WEAK);
+    eval("sub dwarf_drt_none () { 0; }") unless defined(&dwarf_drt_none);
+    eval("sub dwarf_drt_data_reloc () { 1; }") unless defined(&dwarf_drt_data_reloc);
+    eval("sub dwarf_drt_segment_rel () { 2; }") unless defined(&dwarf_drt_segment_rel);
+    eval("sub dwarf_drt_first_of_length_pair () { 3; }") unless defined(&dwarf_drt_first_of_length_pair);
+    eval("sub dwarf_drt_second_of_length_pair () { 4; }") unless defined(&dwarf_drt_second_of_length_pair);
+    eval 'sub DWARF_DRD_BUFFER_VERSION () {2;}' unless defined(&DWARF_DRD_BUFFER_VERSION);
+    eval("sub DW_DLE_NONE () { 0; }") unless defined(&DW_DLE_NONE);
+    eval("sub DW_DLE_ERROR () { 1; }") unless defined(&DW_DLE_ERROR);
+    eval("sub DW_DLE_ARGUMENT () { 2; }") unless defined(&DW_DLE_ARGUMENT);
+    eval("sub DW_DLE_DEBUG_INFO_NULL () { 3; }") unless defined(&DW_DLE_DEBUG_INFO_NULL);
+    eval("sub DW_DLE_NO_ENTRY () { 4; }") unless defined(&DW_DLE_NO_ENTRY);
+    eval("sub DW_DLE_MEMORY () { 5; }") unless defined(&DW_DLE_MEMORY);
+    eval("sub DW_DLE_ELF () { 6; }") unless defined(&DW_DLE_ELF);
+    eval("sub DW_DLE_CU_LENGTH_ERROR () { 7; }") unless defined(&DW_DLE_CU_LENGTH_ERROR);
+    eval("sub DW_DLE_VERSION_STAMP_ERROR () { 8; }") unless defined(&DW_DLE_VERSION_STAMP_ERROR);
+    eval("sub DW_DLE_DEBUG_ABBREV_NULL () { 9; }") unless defined(&DW_DLE_DEBUG_ABBREV_NULL);
+    eval("sub DW_DLE_DIE_NO_CU_CONTEXT () { 10; }") unless defined(&DW_DLE_DIE_NO_CU_CONTEXT);
+    eval("sub DW_DLE_LOC_EXPR_BAD () { 11; }") unless defined(&DW_DLE_LOC_EXPR_BAD);
+    eval("sub DW_DLE_EXPR_LENGTH_BAD () { 12; }") unless defined(&DW_DLE_EXPR_LENGTH_BAD);
+    eval("sub DW_DLE_DEBUG_LOC_SECTION_SHORT () { 13; }") unless defined(&DW_DLE_DEBUG_LOC_SECTION_SHORT);
+    eval("sub DW_DLE_ATTR_FORM_BAD () { 14; }") unless defined(&DW_DLE_ATTR_FORM_BAD);
+    eval("sub DW_DLE_DEBUG_LINE_LENGTH_BAD () { 15; }") unless defined(&DW_DLE_DEBUG_LINE_LENGTH_BAD);
+    eval("sub DW_DLE_LINE_FILE_NUM_BAD () { 16; }") unless defined(&DW_DLE_LINE_FILE_NUM_BAD);
+    eval("sub DW_DLE_DIR_INDEX_BAD () { 17; }") unless defined(&DW_DLE_DIR_INDEX_BAD);
+    eval("sub DW_DLE_DEBUG_FRAME_LENGTH_BAD () { 18; }") unless defined(&DW_DLE_DEBUG_FRAME_LENGTH_BAD);
+    eval("sub DW_DLE_NO_CIE_FOR_FDE () { 19; }") unless defined(&DW_DLE_NO_CIE_FOR_FDE);
+    eval("sub DW_DLE_FRAME_AUGMENTATION_UNKNOWN () { 20; }") unless defined(&DW_DLE_FRAME_AUGMENTATION_UNKNOWN);
+    eval("sub DW_DLE_FRAME_INSTR_EXEC_ERROR () { 21; }") unless defined(&DW_DLE_FRAME_INSTR_EXEC_ERROR);
+    eval("sub DW_DLE_FRAME_VERSION_BAD () { 22; }") unless defined(&DW_DLE_FRAME_VERSION_BAD);
+    eval("sub DW_DLE_FRAME_TABLE_COL_BAD () { 23; }") unless defined(&DW_DLE_FRAME_TABLE_COL_BAD);
+    eval("sub DW_DLE_DF_REG_NUM_TOO_HIGH () { 24; }") unless defined(&DW_DLE_DF_REG_NUM_TOO_HIGH);
+    eval("sub DW_DLE_PC_NOT_IN_FDE_RANGE () { 25; }") unless defined(&DW_DLE_PC_NOT_IN_FDE_RANGE);
+    eval("sub DW_DLE_ARANGE_OFFSET_BAD () { 26; }") unless defined(&DW_DLE_ARANGE_OFFSET_BAD);
+    eval("sub DW_DLE_DEBUG_MACRO_INCONSISTENT () { 27; }") unless defined(&DW_DLE_DEBUG_MACRO_INCONSISTENT);
+    eval("sub DW_DLE_ELF_SECT_ERR () { 28; }") unless defined(&DW_DLE_ELF_SECT_ERR);
+    eval("sub DW_DLE_COMPRESSION () { 29; }") unless defined(&DW_DLE_COMPRESSION);
+    eval("sub DW_DLE_NUM () { 30; }") unless defined(&DW_DLE_NUM);
+    eval 'sub DW_DLE_DBG_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_DBG_ALLOC);
+    eval 'sub DW_DLE_ALLOC_FAIL () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_ALLOC_FAIL);
+    eval 'sub DW_DLE_SECT_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_SECT_ALLOC);
+    eval 'sub DW_DLE_FILE_ENTRY_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_FILE_ENTRY_ALLOC);
+    eval 'sub DW_DLE_LINE_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_LINE_ALLOC);
+    eval 'sub DW_DLE_FPGM_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_FPGM_ALLOC);
+    eval 'sub DW_DLE_INCDIR_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_INCDIR_ALLOC);
+    eval 'sub DW_DLE_STRING_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_STRING_ALLOC);
+    eval 'sub DW_DLE_CHUNK_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_CHUNK_ALLOC);
+    eval 'sub DW_DLE_CIE_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_CIE_ALLOC);
+    eval 'sub DW_DLE_FDE_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_FDE_ALLOC);
+    eval 'sub DW_DLE_CIE_OFFS_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_CIE_OFFS_ALLOC);
+    eval 'sub DW_DLE_DIE_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_DIE_ALLOC);
+    eval 'sub DW_DLE_ATTR_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_ATTR_ALLOC);
+    eval 'sub DW_DLE_ABBREV_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_ABBREV_ALLOC);
+    eval 'sub DW_DLE_ADDR_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_ADDR_ALLOC);
+    eval 'sub DW_DLE_REL_ALLOC () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_REL_ALLOC);
+    eval 'sub DW_DLE_MACINFO_MALLOC_FAIL () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_MACINFO_MALLOC_FAIL);
+    eval 'sub DW_DLE_DEBUG_MACRO_MALLOC_SPACE () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_DEBUG_MACRO_MALLOC_SPACE);
+    eval 'sub DW_DLE_DF_ALLOC_FAIL () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_DF_ALLOC_FAIL);
+    eval 'sub DW_DLE_RELOC_SECTION_MALLOC_FAIL () { &DW_DLE_MEMORY;}' unless defined(&DW_DLE_RELOC_SECTION_MALLOC_FAIL);
+    eval 'sub DW_DLE_DBG_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_DBG_NULL);
+    eval 'sub DW_DLE_DIE_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_DIE_NULL);
+    eval 'sub DW_DLE_FDE_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_FDE_NULL);
+    eval 'sub DW_DLE_CIE_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_CIE_NULL);
+    eval 'sub DW_DLE_ATTR_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_ATTR_NULL);
+    eval 'sub DW_DLE_GLOBAL_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_GLOBAL_NULL);
+    eval 'sub DW_DLE_ARANGES_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_ARANGES_NULL);
+    eval 'sub DW_DLE_ARANGE_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_ARANGE_NULL);
+    eval 'sub DW_DLE_EXPR_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_EXPR_NULL);
+    eval 'sub DW_DLE_FUNC_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_FUNC_NULL);
+    eval 'sub DW_DLE_TYPE_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_TYPE_NULL);
+    eval 'sub DW_DLE_VAR_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_VAR_NULL);
+    eval 'sub DW_DLE_WEAK_NULL () { &DW_DLE_ARGUMENT;}' unless defined(&DW_DLE_WEAK_NULL);
+    eval 'sub DW_DLE_ELF_BEGIN_ERROR () { &DW_DLE_ELF;}' unless defined(&DW_DLE_ELF_BEGIN_ERROR);
+    eval 'sub DW_DLE_ELF_GETEHDR_ERROR () { &DW_DLE_ELF;}' unless defined(&DW_DLE_ELF_GETEHDR_ERROR);
+    eval 'sub DW_DLE_ELF_GETSHDR_ERROR () { &DW_DLE_ELF;}' unless defined(&DW_DLE_ELF_GETSHDR_ERROR);
+    eval 'sub DW_DLE_ELF_STRPTR_ERROR () { &DW_DLE_ELF;}' unless defined(&DW_DLE_ELF_STRPTR_ERROR);
+    eval 'sub DW_DLE_ELF_SECT_ERROR () { &DW_DLE_ELF;}' unless defined(&DW_DLE_ELF_SECT_ERROR);
+    eval 'sub DW_DLE_ELF_GETIDENT_ERROR () { &DW_DLE_ELF;}' unless defined(&DW_DLE_ELF_GETIDENT_ERROR);
+    eval 'sub dwarf_errno {
+        my($error) = @_;
+	    eval q( ($error->{err_error}));
+    }' unless defined(&dwarf_errno);
+    eval 'sub dwarf_errmsg {
+        my($error) = @_;
+	    eval q( &dwarf_errmsg_($error));
+    }' unless defined(&dwarf_errmsg);
+    eval 'sub DW_DLV_NO_ENTRY () {-1;}' unless defined(&DW_DLV_NO_ENTRY);
+    eval 'sub DW_DLV_OK () {0;}' unless defined(&DW_DLV_OK);
+    eval 'sub DW_DLV_ERROR () {1;}' unless defined(&DW_DLV_ERROR);
+    eval 'sub DW_DLV_BADADDR () { &NULL;}' unless defined(&DW_DLV_BADADDR);
+    eval 'sub DW_DLV_NOCOUNT () {(( &Dwarf_Signed) -1);}' unless defined(&DW_DLV_NOCOUNT);
+    eval 'sub DW_DLC_READ () {0x1;}' unless defined(&DW_DLC_READ);
+    eval 'sub DW_DLC_WRITE () {0x2;}' unless defined(&DW_DLC_WRITE);
+    eval 'sub DW_DLC_RDWR () {0x4;}' unless defined(&DW_DLC_RDWR);
+    eval 'sub DW_DLC_SIZE_64 () {0x40000000;}' unless defined(&DW_DLC_SIZE_64);
+    eval 'sub DW_DLC_SIZE_32 () {0x20000000;}' unless defined(&DW_DLC_SIZE_32);
+    eval 'sub DW_DLC_OFFSET_SIZE_64 () {0x10000000;}' unless defined(&DW_DLC_OFFSET_SIZE_64);
+    eval 'sub DW_DLC_ISA_MIPS () {0x80000000;}' unless defined(&DW_DLC_ISA_MIPS);
+    eval 'sub DW_DLC_ISA_IA64 () {0x1000000;}' unless defined(&DW_DLC_ISA_IA64);
+    eval 'sub DW_DLC_STREAM_RELOCATIONS () {0x2000000;}' unless defined(&DW_DLC_STREAM_RELOCATIONS);
+    eval 'sub DW_DLC_SYMBOLIC_RELOCATIONS () {0x4000000;}' unless defined(&DW_DLC_SYMBOLIC_RELOCATIONS);
+    eval 'sub DW_DLC_TARGET_BIGENDIAN () {0x8000000;}' unless defined(&DW_DLC_TARGET_BIGENDIAN);
+    eval 'sub DW_DLC_TARGET_LITTLEENDIAN () {0x100000;}' unless defined(&DW_DLC_TARGET_LITTLEENDIAN);
+    eval("sub DW_ISA_ARM () { 0; }") unless defined(&DW_ISA_ARM);
+    eval("sub DW_ISA_IA64 () { 1; }") unless defined(&DW_ISA_IA64);
+    eval("sub DW_ISA_MIPS () { 2; }") unless defined(&DW_ISA_MIPS);
+    eval("sub DW_ISA_PPC () { 3; }") unless defined(&DW_ISA_PPC);
+    eval("sub DW_ISA_SPARC () { 4; }") unless defined(&DW_ISA_SPARC);
+    eval("sub DW_ISA_X86 () { 5; }") unless defined(&DW_ISA_X86);
+    eval("sub DW_ISA_X86_64 () { 6; }") unless defined(&DW_ISA_X86_64);
+    eval("sub DW_ISA_AARCH64 () { 7; }") unless defined(&DW_ISA_AARCH64);
+    eval("sub DW_ISA_RISCV () { 8; }") unless defined(&DW_ISA_RISCV);
+    eval("sub DW_ISA_MAX () { 9; }") unless defined(&DW_ISA_MAX);
+    if(defined(&__cplusplus)) {
+    }
+    if(defined(&__cplusplus)) {
+    }
+}
+1;

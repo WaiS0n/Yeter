@@ -1,0 +1,49 @@
+Hi!
+
+A quick update to address the new FreeBSD security advisory for ping utility
+as well as Suricata.  The DNS block list was rewritten in Python and there
+will be a couple of cool additions for it in the foreseeable future.  :)
+
+Here are the full patch notes:
+
+o system: fix internal CRL check (contributed by kulikov-a)
+o system: fix a few minor Coverity Scan reports in PHP code[1]
+o interfaces: use get_interface_list() to identify hardware devices
+o interfaces: fix single ACL use for MVC/API interface pages
+o firewall: add category selection to aliases
+o unbound: rework DNSBL implementation to Python module
+o backend: clean up scripts/systemheath location
+o backend: moved log format definitions to new location for core and several plugins
+o mvc: change default sorting to case-insensitive
+o mvc: move JavaScript and CSS imports to base controller
+o mvc: make sure HostnameField with ZoneRootAllowed accepts "@." prefix
+o plugins: os-telegraf 1.12.7[2]
+o plugins: os-theme-cicada 1.30 (contributed by Team Rebellion)
+o plugins: os-theme-vicuna 1.42 (contributed by Team Rebellion)
+o plugins: os-wireguard now attempts to start tunnels again when all DNS is configured
+o src: ixgbe: workaround errata about UDP frames with zero checksum
+o src: hpet: Allow a MMIO window smaller than 1K
+o src: ping: fix handling of IP packet sizes[3]
+o ports: php 8.0.26[4]
+o ports: sqlite 3.40.0[5]
+o ports: suricata 6.0.9[6]
+
+A hotfix release was issued as 22.7.9_3:
+
+o unbound: fix blocklist use with DNS64 mode (contributed by kulikov-a)
+o unbound: change working directory before checking configuration
+o web proxy: fix broken "Google GSuite restricted" option
+o ports: suricata backs out new version 14 netmap API changes for now[7]
+
+
+Stay safe,
+Your OPNsense team
+
+--
+[1] https://scan.coverity.com/projects/opnsense-core
+[2] https://github.com/opnsense/plugins/blob/stable/22.7/net-mgmt/telegraf/pkg-descr
+[3] https://www.freebsd.org/security/advisories/FreeBSD-SA-22:15.ping.asc
+[4] https://www.php.net/ChangeLog-8.php#8.0.26
+[5] https://sqlite.org/releaselog/3_40_0.html
+[6] https://suricata.io/2022/11/29/suricata-6-0-9-released/
+[7] https://redmine.openinfosecfoundation.org/issues/5744

@@ -1,0 +1,13 @@
+_LICENSE=BSD2CLAUSE GPLv2
+_LICENSE_COMB=multi
+_LICENSE_NAME=Multiple (all of): BSD2CLAUSE GPLv2
+_LICENSE_PERMS=dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS=
+_LICENSE_NAME_BSD2CLAUSE =BSD 2-clause Simplified License
+_LICENSE_PERMS_BSD2CLAUSE =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_BSD2CLAUSE =FSF OSI COPYFREE
+_LICENSE_DISTFILES_BSD2CLAUSE =lz4-1.9.4.tar.gz
+_LICENSE_NAME_GPLv2 =GNU General Public License version 2
+_LICENSE_PERMS_GPLv2 =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_GPLv2 =FSF GPL OSI
+_LICENSE_DISTFILES_GPLv2 =lz4-1.9.4.tar.gz

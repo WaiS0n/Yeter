@@ -1,0 +1,56 @@
+require '_h2ph_pre.ph';
+
+no warnings qw(redefine misc);
+
+unless(defined(&_LOGIN_CAP_H_)) {
+    eval 'sub _LOGIN_CAP_H_ () {1;}' unless defined(&_LOGIN_CAP_H_);
+    eval 'sub LOGIN_DEFCLASS () {"default";}' unless defined(&LOGIN_DEFCLASS);
+    eval 'sub LOGIN_DEFROOTCLASS () {"root";}' unless defined(&LOGIN_DEFROOTCLASS);
+    eval 'sub LOGIN_MECLASS () {"me";}' unless defined(&LOGIN_MECLASS);
+    eval 'sub LOGIN_DEFSTYLE () {"passwd";}' unless defined(&LOGIN_DEFSTYLE);
+    eval 'sub LOGIN_DEFSERVICE () {"login";}' unless defined(&LOGIN_DEFSERVICE);
+    eval 'sub _PATH_LOGIN_CONF () {"/etc/login.conf";}' unless defined(&_PATH_LOGIN_CONF);
+    eval 'sub _FILE_LOGIN_CONF () {".login_conf";}' unless defined(&_FILE_LOGIN_CONF);
+    eval 'sub _PATH_AUTHPROG () {"/usr/libexec/login_";}' unless defined(&_PATH_AUTHPROG);
+    eval 'sub LOGIN_SETGROUP () {0x1;}' unless defined(&LOGIN_SETGROUP);
+    eval 'sub LOGIN_SETLOGIN () {0x2;}' unless defined(&LOGIN_SETLOGIN);
+    eval 'sub LOGIN_SETPATH () {0x4;}' unless defined(&LOGIN_SETPATH);
+    eval 'sub LOGIN_SETPRIORITY () {0x8;}' unless defined(&LOGIN_SETPRIORITY);
+    eval 'sub LOGIN_SETRESOURCES () {0x10;}' unless defined(&LOGIN_SETRESOURCES);
+    eval 'sub LOGIN_SETUMASK () {0x20;}' unless defined(&LOGIN_SETUMASK);
+    eval 'sub LOGIN_SETUSER () {0x40;}' unless defined(&LOGIN_SETUSER);
+    eval 'sub LOGIN_SETENV () {0x80;}' unless defined(&LOGIN_SETENV);
+    eval 'sub LOGIN_SETMAC () {0x100;}' unless defined(&LOGIN_SETMAC);
+    eval 'sub LOGIN_SETCPUMASK () {0x200;}' unless defined(&LOGIN_SETCPUMASK);
+    eval 'sub LOGIN_SETLOGINCLASS () {0x400;}' unless defined(&LOGIN_SETLOGINCLASS);
+    eval 'sub LOGIN_SETALL () {0x7ff;}' unless defined(&LOGIN_SETALL);
+    eval 'sub BI_AUTH () {"authorize";}' unless defined(&BI_AUTH);
+    eval 'sub BI_REJECT () {"reject";}' unless defined(&BI_REJECT);
+    eval 'sub BI_CHALLENG () {"reject challenge";}' unless defined(&BI_CHALLENG);
+    eval 'sub BI_SILENT () {"reject silent";}' unless defined(&BI_SILENT);
+    eval 'sub BI_REMOVE () {"remove";}' unless defined(&BI_REMOVE);
+    eval 'sub BI_ROOTOKAY () {"authorize root";}' unless defined(&BI_ROOTOKAY);
+    eval 'sub BI_SECURE () {"authorize secure";}' unless defined(&BI_SECURE);
+    eval 'sub BI_SETENV () {"setenv";}' unless defined(&BI_SETENV);
+    eval 'sub BI_VALUE () {"value";}' unless defined(&BI_VALUE);
+    eval 'sub AUTH_OKAY () {0x1;}' unless defined(&AUTH_OKAY);
+    eval 'sub AUTH_ROOTOKAY () {0x2;}' unless defined(&AUTH_ROOTOKAY);
+    eval 'sub AUTH_SECURE () {0x4;}' unless defined(&AUTH_SECURE);
+    eval 'sub AUTH_SILENT () {0x8;}' unless defined(&AUTH_SILENT);
+    eval 'sub AUTH_CHALLENGE () {0x10;}' unless defined(&AUTH_CHALLENGE);
+    eval 'sub AUTH_ALLOW () {( &AUTH_OKAY |  &AUTH_ROOTOKAY |  &AUTH_SECURE);}' unless defined(&AUTH_ALLOW);
+    eval 'sub LTM_NONE () {0x;}' unless defined(&LTM_NONE);
+    eval 'sub LTM_SUN () {0x1;}' unless defined(&LTM_SUN);
+    eval 'sub LTM_MON () {0x2;}' unless defined(&LTM_MON);
+    eval 'sub LTM_TUE () {0x4;}' unless defined(&LTM_TUE);
+    eval 'sub LTM_WED () {0x8;}' unless defined(&LTM_WED);
+    eval 'sub LTM_THU () {0x10;}' unless defined(&LTM_THU);
+    eval 'sub LTM_FRI () {0x20;}' unless defined(&LTM_FRI);
+    eval 'sub LTM_SAT () {0x40;}' unless defined(&LTM_SAT);
+    eval 'sub LTM_ANY () {0x7f;}' unless defined(&LTM_ANY);
+    eval 'sub LTM_WK () {0x3e;}' unless defined(&LTM_WK);
+    eval 'sub LTM_WD () {0x41;}' unless defined(&LTM_WD);
+    eval 'sub LC_MAXTIMES () {64;}' unless defined(&LC_MAXTIMES);
+    require 'sys/cdefs.ph';
+}
+1;

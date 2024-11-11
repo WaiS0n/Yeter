@@ -1,0 +1,35 @@
+{
+    "access": "read",
+    "avail": "1.2.0",
+    "brief": [
+        "This command retrieves the current configuration used by the server. The configuration is essentially the same as the contents of the configuration file, but includes additional changes made by other commands and due to parameters' inheritance."
+    ],
+    "cmd-comment": [
+        "This command takes no parameters."
+    ],
+    "cmd-syntax": [
+        "{",
+        "    \"command\": \"config-get\"",
+        "}"
+    ],
+    "name": "config-get",
+    "resp-syntax": [
+        "{",
+        "    \"result\": <integer>,",
+        "    \"arguments\": {",
+        "        <Dhcp4, Dhcp6, or Control-agent object>: <JSON configuration here> ",
+        "    }",
+        "}"
+    ],
+    "resp-comment": [
+        "Starting with Kea 2.4.0, the successful response contains an SHA256 digest of the configuration that was ",
+        "just retrieved. It might be used to determine if a configuration has been modified or not, possibly with the ",
+        "use of config-hash-get."
+    ],
+    "support": [
+        "kea-dhcp4",
+        "kea-dhcp6",
+        "kea-dhcp-ddns",
+        "kea-ctrl-agent"
+    ]
+}

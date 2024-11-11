@@ -1,0 +1,13 @@
+_LICENSE=BSD3CLAUSE MIT
+_LICENSE_COMB=multi
+_LICENSE_NAME=Multiple (all of): BSD3CLAUSE MIT
+_LICENSE_PERMS=dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS=
+_LICENSE_NAME_BSD3CLAUSE =BSD 3-clause New or Revised License
+_LICENSE_PERMS_BSD3CLAUSE =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_BSD3CLAUSE =FSF OSI COPYFREE
+_LICENSE_DISTFILES_BSD3CLAUSE =netaddr-1.3.0.tar.gz
+_LICENSE_NAME_MIT =MIT license / X11 license
+_LICENSE_PERMS_MIT =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_MIT =COPYFREE FSF GPL OSI
+_LICENSE_DISTFILES_MIT =netaddr-1.3.0.tar.gz

@@ -1,0 +1,76 @@
+require '_h2ph_pre.ph';
+
+no warnings qw(redefine misc);
+
+unless(defined(&_SYS_UMTX_H_)) {
+    eval 'sub _SYS_UMTX_H_ () {1;}' unless defined(&_SYS_UMTX_H_);
+    require 'sys/_umtx.ph';
+    eval 'sub UMTX_UNOWNED () {0x;}' unless defined(&UMTX_UNOWNED);
+    eval 'sub UMTX_CONTESTED () { &LONG_MIN;}' unless defined(&UMTX_CONTESTED);
+    eval 'sub USYNC_PROCESS_SHARED () {0x1;}' unless defined(&USYNC_PROCESS_SHARED);
+    eval 'sub UMUTEX_PRIO_INHERIT () {0x4;}' unless defined(&UMUTEX_PRIO_INHERIT);
+    eval 'sub UMUTEX_PRIO_PROTECT () {0x8;}' unless defined(&UMUTEX_PRIO_PROTECT);
+    eval 'sub UMUTEX_ROBUST () {0x10;}' unless defined(&UMUTEX_ROBUST);
+    eval 'sub UMUTEX_NONCONSISTENT () {0x20;}' unless defined(&UMUTEX_NONCONSISTENT);
+    eval 'sub UMUTEX_UNOWNED () {0x;}' unless defined(&UMUTEX_UNOWNED);
+    eval 'sub UMUTEX_CONTESTED () {0x80000000;}' unless defined(&UMUTEX_CONTESTED);
+    eval 'sub UMUTEX_RB_OWNERDEAD () {( &UMUTEX_CONTESTED | 0x10);}' unless defined(&UMUTEX_RB_OWNERDEAD);
+    eval 'sub UMUTEX_RB_NOTRECOV () {( &UMUTEX_CONTESTED | 0x11);}' unless defined(&UMUTEX_RB_NOTRECOV);
+    eval 'sub URWLOCK_PREFER_READER () {0x2;}' unless defined(&URWLOCK_PREFER_READER);
+    eval 'sub URWLOCK_WRITE_OWNER () {0x80000000;}' unless defined(&URWLOCK_WRITE_OWNER);
+    eval 'sub URWLOCK_WRITE_WAITERS () {0x40000000;}' unless defined(&URWLOCK_WRITE_WAITERS);
+    eval 'sub URWLOCK_READ_WAITERS () {0x20000000;}' unless defined(&URWLOCK_READ_WAITERS);
+    eval 'sub URWLOCK_MAX_READERS () {0x1fffffff;}' unless defined(&URWLOCK_MAX_READERS);
+    eval 'sub URWLOCK_READER_COUNT {
+        my($c) = @_;
+	    eval q((($c) &  &URWLOCK_MAX_READERS));
+    }' unless defined(&URWLOCK_READER_COUNT);
+    eval 'sub SEM_NAMED () {0x2;}' unless defined(&SEM_NAMED);
+    eval 'sub USEM_HAS_WAITERS () {0x80000000;}' unless defined(&USEM_HAS_WAITERS);
+    eval 'sub USEM_MAX_COUNT () {0x7fffffff;}' unless defined(&USEM_MAX_COUNT);
+    eval 'sub USEM_COUNT {
+        my($c) = @_;
+	    eval q((($c) &  &USEM_MAX_COUNT));
+    }' unless defined(&USEM_COUNT);
+    eval 'sub UMTX_OP_LOCK () {0;}' unless defined(&UMTX_OP_LOCK);
+    eval 'sub UMTX_OP_UNLOCK () {1;}' unless defined(&UMTX_OP_UNLOCK);
+    eval 'sub UMTX_OP_WAIT () {2;}' unless defined(&UMTX_OP_WAIT);
+    eval 'sub UMTX_OP_WAKE () {3;}' unless defined(&UMTX_OP_WAKE);
+    eval 'sub UMTX_OP_MUTEX_TRYLOCK () {4;}' unless defined(&UMTX_OP_MUTEX_TRYLOCK);
+    eval 'sub UMTX_OP_MUTEX_LOCK () {5;}' unless defined(&UMTX_OP_MUTEX_LOCK);
+    eval 'sub UMTX_OP_MUTEX_UNLOCK () {6;}' unless defined(&UMTX_OP_MUTEX_UNLOCK);
+    eval 'sub UMTX_OP_SET_CEILING () {7;}' unless defined(&UMTX_OP_SET_CEILING);
+    eval 'sub UMTX_OP_CV_WAIT () {8;}' unless defined(&UMTX_OP_CV_WAIT);
+    eval 'sub UMTX_OP_CV_SIGNAL () {9;}' unless defined(&UMTX_OP_CV_SIGNAL);
+    eval 'sub UMTX_OP_CV_BROADCAST () {10;}' unless defined(&UMTX_OP_CV_BROADCAST);
+    eval 'sub UMTX_OP_WAIT_UINT () {11;}' unless defined(&UMTX_OP_WAIT_UINT);
+    eval 'sub UMTX_OP_RW_RDLOCK () {12;}' unless defined(&UMTX_OP_RW_RDLOCK);
+    eval 'sub UMTX_OP_RW_WRLOCK () {13;}' unless defined(&UMTX_OP_RW_WRLOCK);
+    eval 'sub UMTX_OP_RW_UNLOCK () {14;}' unless defined(&UMTX_OP_RW_UNLOCK);
+    eval 'sub UMTX_OP_WAIT_UINT_PRIVATE () {15;}' unless defined(&UMTX_OP_WAIT_UINT_PRIVATE);
+    eval 'sub UMTX_OP_WAKE_PRIVATE () {16;}' unless defined(&UMTX_OP_WAKE_PRIVATE);
+    eval 'sub UMTX_OP_MUTEX_WAIT () {17;}' unless defined(&UMTX_OP_MUTEX_WAIT);
+    eval 'sub UMTX_OP_MUTEX_WAKE () {18;}' unless defined(&UMTX_OP_MUTEX_WAKE);
+    eval 'sub UMTX_OP_SEM_WAIT () {19;}' unless defined(&UMTX_OP_SEM_WAIT);
+    eval 'sub UMTX_OP_SEM_WAKE () {20;}' unless defined(&UMTX_OP_SEM_WAKE);
+    eval 'sub UMTX_OP_NWAKE_PRIVATE () {21;}' unless defined(&UMTX_OP_NWAKE_PRIVATE);
+    eval 'sub UMTX_OP_MUTEX_WAKE2 () {22;}' unless defined(&UMTX_OP_MUTEX_WAKE2);
+    eval 'sub UMTX_OP_SEM2_WAIT () {23;}' unless defined(&UMTX_OP_SEM2_WAIT);
+    eval 'sub UMTX_OP_SEM2_WAKE () {24;}' unless defined(&UMTX_OP_SEM2_WAKE);
+    eval 'sub UMTX_OP_SHM () {25;}' unless defined(&UMTX_OP_SHM);
+    eval 'sub UMTX_OP_ROBUST_LISTS () {26;}' unless defined(&UMTX_OP_ROBUST_LISTS);
+    eval 'sub UMTX_OP_GET_MIN_TIMEOUT () {27;}' unless defined(&UMTX_OP_GET_MIN_TIMEOUT);
+    eval 'sub UMTX_OP_SET_MIN_TIMEOUT () {28;}' unless defined(&UMTX_OP_SET_MIN_TIMEOUT);
+    eval 'sub UMTX_OP__I386 () {0x40000000;}' unless defined(&UMTX_OP__I386);
+    eval 'sub UMTX_OP__32BIT () {0x80000000;}' unless defined(&UMTX_OP__32BIT);
+    eval 'sub CVWAIT_CHECK_UNPARKING () {0x1;}' unless defined(&CVWAIT_CHECK_UNPARKING);
+    eval 'sub CVWAIT_ABSTIME () {0x2;}' unless defined(&CVWAIT_ABSTIME);
+    eval 'sub CVWAIT_CLOCKID () {0x4;}' unless defined(&CVWAIT_CLOCKID);
+    eval 'sub UMTX_ABSTIME () {0x1;}' unless defined(&UMTX_ABSTIME);
+    eval 'sub UMTX_CHECK_UNPARKING () { &CVWAIT_CHECK_UNPARKING;}' unless defined(&UMTX_CHECK_UNPARKING);
+    eval 'sub UMTX_SHM_CREAT () {0x1;}' unless defined(&UMTX_SHM_CREAT);
+    eval 'sub UMTX_SHM_LOOKUP () {0x2;}' unless defined(&UMTX_SHM_LOOKUP);
+    eval 'sub UMTX_SHM_DESTROY () {0x4;}' unless defined(&UMTX_SHM_DESTROY);
+    eval 'sub UMTX_SHM_ALIVE () {0x8;}' unless defined(&UMTX_SHM_ALIVE);
+}
+1;

@@ -1,0 +1,13 @@
+_LICENSE=MIT APACHE20
+_LICENSE_COMB=dual
+_LICENSE_NAME=Dual (any of): MIT APACHE20
+_LICENSE_PERMS=dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS=
+_LICENSE_NAME_MIT =MIT license / X11 license
+_LICENSE_PERMS_MIT =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_MIT =COPYFREE FSF GPL OSI
+_LICENSE_DISTFILES_MIT =outcome-1.3.0.post0.tar.gz
+_LICENSE_NAME_APACHE20 =Apache License 2.0
+_LICENSE_PERMS_APACHE20 =dist-mirror dist-sell pkg-mirror pkg-sell auto-accept
+_LICENSE_GROUPS_APACHE20 =FSF OSI
+_LICENSE_DISTFILES_APACHE20 =outcome-1.3.0.post0.tar.gz

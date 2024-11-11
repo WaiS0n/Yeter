@@ -1,0 +1,58 @@
+require '_h2ph_pre.ph';
+
+no warnings qw(redefine misc);
+
+unless(defined(&_SYS_DISK_ZONE_H_)) {
+    eval 'sub _SYS_DISK_ZONE_H_ () {1;}' unless defined(&_SYS_DISK_ZONE_H_);
+    eval 'sub DISK_ZONE_MODE_NONE () {0x;}' unless defined(&DISK_ZONE_MODE_NONE);
+    eval 'sub DISK_ZONE_MODE_HOST_AWARE () {0x1;}' unless defined(&DISK_ZONE_MODE_HOST_AWARE);
+    eval 'sub DISK_ZONE_MODE_DRIVE_MANAGED () {0x2;}' unless defined(&DISK_ZONE_MODE_DRIVE_MANAGED);
+    eval 'sub DISK_ZONE_MODE_HOST_MANAGED () {0x4;}' unless defined(&DISK_ZONE_MODE_HOST_MANAGED);
+    eval 'sub DISK_ZONE_DISK_URSWRZ () {0x1;}' unless defined(&DISK_ZONE_DISK_URSWRZ);
+    eval 'sub DISK_ZONE_OPT_SEQ_SET () {0x2;}' unless defined(&DISK_ZONE_OPT_SEQ_SET);
+    eval 'sub DISK_ZONE_OPT_NONSEQ_SET () {0x4;}' unless defined(&DISK_ZONE_OPT_NONSEQ_SET);
+    eval 'sub DISK_ZONE_MAX_SEQ_SET () {0x8;}' unless defined(&DISK_ZONE_MAX_SEQ_SET);
+    eval 'sub DISK_ZONE_RZ_SUP () {0x10;}' unless defined(&DISK_ZONE_RZ_SUP);
+    eval 'sub DISK_ZONE_OPEN_SUP () {0x20;}' unless defined(&DISK_ZONE_OPEN_SUP);
+    eval 'sub DISK_ZONE_CLOSE_SUP () {0x40;}' unless defined(&DISK_ZONE_CLOSE_SUP);
+    eval 'sub DISK_ZONE_FINISH_SUP () {0x80;}' unless defined(&DISK_ZONE_FINISH_SUP);
+    eval 'sub DISK_ZONE_RWP_SUP () {0x100;}' unless defined(&DISK_ZONE_RWP_SUP);
+    eval 'sub DISK_ZONE_CMD_SUP_MASK () {0x1f0;}' unless defined(&DISK_ZONE_CMD_SUP_MASK);
+    eval 'sub DISK_ZONE_RWP_FLAG_NONE () {0x;}' unless defined(&DISK_ZONE_RWP_FLAG_NONE);
+    eval 'sub DISK_ZONE_RWP_FLAG_ALL () {0x1;}' unless defined(&DISK_ZONE_RWP_FLAG_ALL);
+    eval 'sub DISK_ZONE_SAME_ALL_DIFFERENT () {0x;}' unless defined(&DISK_ZONE_SAME_ALL_DIFFERENT);
+    eval 'sub DISK_ZONE_SAME_ALL_SAME () {0x1;}' unless defined(&DISK_ZONE_SAME_ALL_SAME);
+    eval 'sub DISK_ZONE_SAME_LAST_DIFFERENT () {0x2;}' unless defined(&DISK_ZONE_SAME_LAST_DIFFERENT);
+    eval 'sub DISK_ZONE_SAME_TYPES_DIFFERENT () {0x3;}' unless defined(&DISK_ZONE_SAME_TYPES_DIFFERENT);
+    eval 'sub DISK_ZONE_TYPE_CONVENTIONAL () {0x1;}' unless defined(&DISK_ZONE_TYPE_CONVENTIONAL);
+    eval 'sub DISK_ZONE_TYPE_SEQ_REQUIRED () {0x2;}' unless defined(&DISK_ZONE_TYPE_SEQ_REQUIRED);
+    eval 'sub DISK_ZONE_TYPE_SEQ_PREFERRED () {0x3;}' unless defined(&DISK_ZONE_TYPE_SEQ_PREFERRED);
+    eval 'sub DISK_ZONE_COND_NOT_WP () {0x;}' unless defined(&DISK_ZONE_COND_NOT_WP);
+    eval 'sub DISK_ZONE_COND_EMPTY () {0x1;}' unless defined(&DISK_ZONE_COND_EMPTY);
+    eval 'sub DISK_ZONE_COND_IMPLICIT_OPEN () {0x2;}' unless defined(&DISK_ZONE_COND_IMPLICIT_OPEN);
+    eval 'sub DISK_ZONE_COND_EXPLICIT_OPEN () {0x3;}' unless defined(&DISK_ZONE_COND_EXPLICIT_OPEN);
+    eval 'sub DISK_ZONE_COND_CLOSED () {0x4;}' unless defined(&DISK_ZONE_COND_CLOSED);
+    eval 'sub DISK_ZONE_COND_READONLY () {0xd;}' unless defined(&DISK_ZONE_COND_READONLY);
+    eval 'sub DISK_ZONE_COND_FULL () {0xe;}' unless defined(&DISK_ZONE_COND_FULL);
+    eval 'sub DISK_ZONE_COND_OFFLINE () {0xf;}' unless defined(&DISK_ZONE_COND_OFFLINE);
+    eval 'sub DISK_ZONE_FLAG_RESET () {0x1;}' unless defined(&DISK_ZONE_FLAG_RESET);
+    eval 'sub DISK_ZONE_FLAG_NON_SEQ () {0x2;}' unless defined(&DISK_ZONE_FLAG_NON_SEQ);
+    eval 'sub DISK_ZONE_REP_ALL () {0x;}' unless defined(&DISK_ZONE_REP_ALL);
+    eval 'sub DISK_ZONE_REP_EMPTY () {0x1;}' unless defined(&DISK_ZONE_REP_EMPTY);
+    eval 'sub DISK_ZONE_REP_IMP_OPEN () {0x2;}' unless defined(&DISK_ZONE_REP_IMP_OPEN);
+    eval 'sub DISK_ZONE_REP_EXP_OPEN () {0x3;}' unless defined(&DISK_ZONE_REP_EXP_OPEN);
+    eval 'sub DISK_ZONE_REP_CLOSED () {0x4;}' unless defined(&DISK_ZONE_REP_CLOSED);
+    eval 'sub DISK_ZONE_REP_FULL () {0x5;}' unless defined(&DISK_ZONE_REP_FULL);
+    eval 'sub DISK_ZONE_REP_READONLY () {0x6;}' unless defined(&DISK_ZONE_REP_READONLY);
+    eval 'sub DISK_ZONE_REP_OFFLINE () {0x7;}' unless defined(&DISK_ZONE_REP_OFFLINE);
+    eval 'sub DISK_ZONE_REP_RWP () {0x10;}' unless defined(&DISK_ZONE_REP_RWP);
+    eval 'sub DISK_ZONE_REP_NON_SEQ () {0x11;}' unless defined(&DISK_ZONE_REP_NON_SEQ);
+    eval 'sub DISK_ZONE_REP_NON_WP () {0x3f;}' unless defined(&DISK_ZONE_REP_NON_WP);
+    eval 'sub DISK_ZONE_OPEN () {0x;}' unless defined(&DISK_ZONE_OPEN);
+    eval 'sub DISK_ZONE_CLOSE () {0x1;}' unless defined(&DISK_ZONE_CLOSE);
+    eval 'sub DISK_ZONE_FINISH () {0x2;}' unless defined(&DISK_ZONE_FINISH);
+    eval 'sub DISK_ZONE_REPORT_ZONES () {0x3;}' unless defined(&DISK_ZONE_REPORT_ZONES);
+    eval 'sub DISK_ZONE_RWP () {0x4;}' unless defined(&DISK_ZONE_RWP);
+    eval 'sub DISK_ZONE_GET_PARAMS () {0x5;}' unless defined(&DISK_ZONE_GET_PARAMS);
+}
+1;

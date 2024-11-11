@@ -1,0 +1,45 @@
+{
+    "access": "write",
+    "avail": "1.2.0",
+    "brief": [
+        "This command instructs the server to replace its current configuration with the new configuration supplied in the command's arguments."
+    ],
+    "cmd-comment": [
+        "In the example below, '<server>' is the configuration element name for a given server such as \"Dhcp4\" or \"Dhcp6\"."
+    ],
+    "cmd-syntax": [
+        "{",
+        "    \"command\": \"config-set\",",
+        "    \"arguments\":  {",
+        "        \"'<server>'\": {",
+        "        }",
+        "     }",
+        "}"
+    ],
+    "description": "See <xref linkend=\"command-config-set\"/>",
+    "name": "config-set",
+    "resp-syntax": [
+        "{",
+        "    \"arguments\": {",
+        "        \"hash\": \"8B5F5822E93178B65CE658304C37EA511BDE7D29F792AA5E88012FC741F2BE32\"",
+        "    },",
+        "    \"result\": 0,",
+        "    \"text\": \"Configuration successful.\"",
+        "}",
+        "",
+        "or",
+        "",
+        "{ \"result\": 1, \"text\": \"unsupported parameter: BOGUS (<string>:16:26)\" }"
+    ],
+    "resp-comment": [
+        "Starting with Kea 2.4.0, the successful response from a DHCPv4, DHCPv6, or DHCP-DDNS daemons",
+        "also contain a SHA-256 digest of the newly set configuration. The digest can be used to easily",
+        "determine if a configuration has been modified or not, possibly with the use of config-hash-get."
+    ],
+    "support": [
+        "kea-dhcp4",
+        "kea-dhcp6",
+        "kea-dhcp-ddns",
+        "kea-ctrl-agent"
+    ]
+}

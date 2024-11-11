@@ -1,0 +1,72 @@
+
+#======================================================================================
+# flush ruleset
+#======================================================================================
+flush
+
+#======================================================================================
+# define dummynet pipes
+#======================================================================================
+
+#======================================================================================
+# define dummynet queues
+#======================================================================================
+
+
+#======================================================================================
+# general purpose rules 1...1000
+#======================================================================================
+add 100 allow pfsync from any to any
+add 110 allow carp from any to any
+# layer 2: pass ARP
+add 120 pass layer2 mac-type arp,rarp
+# OPNsense requires for WPA
+add 130 pass layer2 mac-type 0x888e,0x88c7
+# PPP Over Ethernet Session Stage/Discovery Stage
+add 140 pass layer2 mac-type 0x8863,0x8864
+# layer 2: block anything else non-IP(v4/v6)
+add 150 deny layer2 not mac-type ip,ipv6
+
+# allow traffic send from localhost
+add 200 skipto 60000 ipv6 from ::1 to any
+add 201 skipto 60000 ipv4 from 127.0.0.0/8 to any
+add 202 skipto 60000 ipv6 from any to ::1
+add 203 skipto 60000 ipv4 from any to 127.0.0.0/8
+
+#======================================================================================
+# Allow traffic to this host
+#======================================================================================
+
+
+
+#======================================================================================
+# redirect non-authenticated clients to captive portal @ local port 8000 + zoneid
+#======================================================================================
+
+
+#======================================================================================
+# accept traffic from all interfaces not used by captive portal
+#======================================================================================
+# let the responses from the captive portal web server back out
+add 6000 skipto 60000 tcp from any to any out
+# forward unauthorized traffic from captiveportal interfaces to block rule
+# send all the rest to the traffic shaper rules
+add 6199 skipto 60000 all from any to any
+
+
+#======================================================================================
+# 30000 .... 49999 reserved for captive portal accounting rules
+#======================================================================================
+
+
+#======================================================================================
+# traffic shaping section, authorized traffic
+#======================================================================================
+add 60000 return via any
+
+
+# pass authorized
+add 65533 pass ip from any to any
+
+# block all unmatched
+add 65534 deny all from any to any

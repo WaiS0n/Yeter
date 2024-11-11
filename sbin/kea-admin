@@ -1,0 +1,1090 @@
+#!/bin/sh
+
+# Copyright (C) 2014-2023 Internet Systems Consortium, Inc. ("ISC")
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# This is kea-admin script that conducts administrative tasks on the Kea
+# installation. Currently supported operations are:
+#
+# - database init
+# - database version check
+# - database version upgrade
+# - lease database dump
+# - lease upload to the database
+# - lease database recount
+
+# shellcheck disable=SC1091
+# SC1091: Not following: ... was not specified as input (see shellcheck -x).
+
+# shellcheck disable=SC2039
+# SC2039: In POSIX sh, 'local' is undefined.
+
+# shellcheck disable=SC2086
+# SC2086: Double quote to prevent globbing and word splitting.
+# Reason for disable: explicitly don't quote extra_arguments so it is
+# considered multiple arguments instead of one.
+
+# Exit with error if commands exit with non-zero and if undefined variables are
+# used.
+set -eu
+
+# Shell ${variables} derived from autoconf @variables@. Some depend on others, so mind the order.
+prefix="/usr/local"
+export prefix
+exec_prefix="${prefix}"
+export exec_prefix
+SCRIPTS_DIR_DEFAULT="${prefix}/share/kea/scripts"
+scripts_dir="${SCRIPTS_DIR_DEFAULT}"
+VERSION="2.4.1"
+
+assume_yes=0
+
+# lease dump parameters
+dhcp_version=0
+dump_file=""
+dump_qry=""
+
+# Include the installed admin-utils.sh if available. Fallback to sources otherwise.
+if test -f "${prefix}/share/kea/scripts/admin-utils.sh"; then
+    . "${prefix}/share/kea/scripts/admin-utils.sh"
+else
+    . "/usr/obj/usr/ports/net/kea/work/kea-2.4.1/src/bin/admin/admin-utils.sh"
+fi
+
+# Find the installed kea-lfc if available. Fallback to sources otherwise.
+if test -x "${exec_prefix}/sbin/kea-lfc"; then
+    kea_lfc="${exec_prefix}/sbin/kea-lfc"
+else
+    kea_lfc="/usr/obj/usr/ports/net/kea/work/kea-2.4.1/src/bin/lfc/kea-lfc"
+fi
+
+# Prints out usage version.
+usage() {
+  printf \
+'
+kea-admin %s
+
+This is a kea-admin script that conducts administrative tasks on
+the Kea installation.
+
+Usage: %s COMMAND BACKEND [parameters]
+
+COMMAND: Currently supported operations are:
+
+ - db-init: Initializes new database. Useful for first time installation.
+ - db-version: Checks version of the existing database schema. Useful
+ -             for checking database version when preparing for an upgrade.
+ - db-upgrade: Upgrades your database schema.
+ - lease-dump: Dumps current leases to a memfile-ready CSV file.
+ - lease-upload: Uploads leases from a CSV file to the database.
+ - stats-recount: Recounts lease statistics.
+
+BACKEND - one of the supported backends: memfile|mysql|pgsql
+
+PARAMETERS: Parameters are optional in general, but may be required
+            for specific operations.
+ -h or --host hostname - specifies a hostname of a database to connect to
+ -P or --port port - specifies the TCP port to use for the database connection
+ -u or --user name - specifies username when connecting to a database
+ -p or --password [password] - specifies a password for the database connection;
+                               if omitted from the command line,
+                               then the user will be prompted for a password
+ -n or --name database - specifies a database name to connect to
+ -d or --directory - path to upgrade scripts (default: %s)
+ -v or --version - print kea-admin version and quit.
+ -x or --extra - specifies extra argument(s) to pass to the database command
+
+ Parameters specific to lease-dump, lease-upload:
+     -4 to dump IPv4 leases to file
+     -6 to dump IPv6 leases to file
+     -i or --input to specify the name of file from which leases will be uploaded
+     -o or --output to specify the name of file to which leases will be dumped
+     -y or --yes - assume yes on overwriting temporary files
+' "${VERSION}" "${0}" "${SCRIPTS_DIR_DEFAULT}"
+}
+
+### Logging functions ###
+
+# Logs message at the error level.
+# Takes one parameter that is printed as is.
+log_error() {
+    printf "ERROR/kea-admin: %s\n" "${1}"
+}
+
+# Logs message at the warning level.
+# Takes one parameter that is printed as is.
+log_warning() {
+    printf "WARNING/kea-admin: %s\n" "${1}"
+}
+
+# Logs message at the info level.
+# Takes one parameter that is printed as is.
+log_info() {
+    printf "INFO/kea-admin: %s\n" "${1}"
+}
+
+### Convenience functions ###
+
+# Checks if the value is in the list. An example usage of this function
+# is to determine whether the kea-admin command belongs to the list of
+# supported commands.
+is_in_list() {
+    local member="${1-}"  # Value to be checked
+    local list="${2-}"    # Comma separated list of items
+    _inlist=0             # Return value: 0 if not in list, 1 otherwise.
+    if [ -z "${member}" ]; then
+        log_error "missing member (need to specify a string as first param)"
+    fi
+    # Iterate over all items on the list and compare with the member.
+    # If they match, return, otherwise log error and exit.
+    for item in ${list}
+    do
+        if [ "${item}" = "${member}" ]; then
+            _inlist=1
+            return
+        fi
+    done
+}
+
+### Functions that implement database initialization commands
+
+memfile_init() {
+    # Useless as Kea converts CSV versions at startup.
+    log_error "NOT IMPLEMENTED"
+    exit 1
+}
+
+# Validates that the MySQL db_users's permissions are sufficient to
+# create the schema.
+mysql_can_create() {
+
+    # Let's grab the version for possible debugging issues.  It also
+    # determines basic functional access to db.
+    run_command \
+        mysql_execute "select @@global.version;"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "mysql_can_create: get MySQL version failed, mysql status = ${EXIT_CODE}"
+        exit 1
+    fi
+
+    # shellcheck disable=SC2153
+    # SC2153: Possible misspelling: ... may not be assigned, but ... is.
+    # Reason for disable: OUTPUT is assigned in run_command.
+    printf "MySQL Version is: %s\n" "${OUTPUT}"
+
+    # SQL to drop our test table and trigger
+    cleanup_sql="DROP TABLE IF EXISTS kea_dummy_table; DROP PROCEDURE IF EXISTS kea_dummy_trigger;"
+
+    # SQL to create our test table
+    table_sql="CREATE TABLE kea_dummy_table(dummy INT UNSIGNED PRIMARY KEY NOT NULL);"
+
+    # SQL to create our test trigger
+    trigger_sql="\
+CREATE TRIGGER kea_dummy_trigger BEFORE insert ON kea_dummy_table FOR EACH ROW\n \
+BEGIN\n \
+END;"
+
+    # Let's clean up just in case.
+    run_command \
+        mysql_execute "$cleanup_sql"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "mysql_can_create cannot run pre cleanup, mysql status = ${EXIT_CODE}"
+        exit 1;
+    fi
+
+    # Now make the dummy table.
+    perms_ok=1
+    run_command \
+        mysql_execute "$table_sql"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "mysql_can_create cannot create table, check user permissions, mysql status = ${EXIT_CODE}"
+        perms_ok=0;
+    else
+        # Now attempt to make trigger
+        run_command \
+            mysql_execute "$trigger_sql"
+        if [ "${EXIT_CODE}" -ne 0 ]
+        then
+            log_error "mysql_can_create cannot trigger, check user permissions, mysql status = ${EXIT_CODE}"
+            perms_ok=0;
+        fi
+    fi
+
+    # Try to cleanup no matter what happened above
+    run_command \
+        mysql_execute "$cleanup_sql"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "mysql_can_create cannot run post cleanup, mysql status = ${EXIT_CODE}"
+        exit 1;
+    fi
+
+    if [ $perms_ok -ne 1 ]
+    then
+        log_error "Create failed, the user, $db_user, has insufficient privileges."
+        exit 1;
+    fi
+}
+
+# Initializes a new, empty MySQL database.
+# It essentially calls scripts/mysql/dhcpdb_create.mysql script, with
+# some extra sanity checks. It will refuse to use it if there are any
+# existing tables. It's better safe than sorry.
+mysql_init() {
+    printf 'Checking if there is a database initialized already...\n'
+
+    # Let's try to count the number of tables. Anything above 0 means that there
+    # is some database in place. If there is anything, we abort. Note that
+    # mysql may spit out connection or access errors to stderr, we ignore those.
+    # We should not hide them as they may give hints to user what is wrong with
+    # his setup.
+    run_command \
+        mysql_execute "SHOW TABLES;"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "mysql_init table query failed, mysql status = ${EXIT_CODE}"
+        exit 1
+    fi
+
+    count=$(printf '%s' "${OUTPUT}" | wc -w)
+    if [ "${count}" -gt 0 ]; then
+        # Let's start with a new line. mysql could have printed something out.
+        printf '\n'
+        log_error "Expected empty database ${db_name}. Aborting, the following tables are present:
+        ${OUTPUT}"
+        exit 1
+    fi
+
+    # Beginning with MySQL 8.0, the db user needs additional settings or SUPER
+    # privileges to create triggers and or functions. Call mysql_can_create to find
+    # out if we're good to go.  If not, it will exit.
+    printf "Verifying create permissions for %s\n" "$db_user"
+    mysql_can_create
+
+    printf "Initializing database using script %s\n" $scripts_dir/mysql/dhcpdb_create.mysql
+    mysql -B --host="${db_host}" --user="${db_user}" \
+    --password="${db_password}" \
+    "${db_name}" ${extra_arguments} < "${scripts_dir}/mysql/dhcpdb_create.mysql"
+
+    printf "mysql returned status code %s\n" "${EXIT_CODE}"
+
+    if [ "${EXIT_CODE}" -eq 0 ]; then
+        printf "Database version reported after initialization: "
+        checked_mysql_version
+        printf '\n'
+    fi
+
+    exit "${EXIT_CODE}"
+}
+
+pgsql_init() {
+    printf 'Checking if there is a database initialized already...\n'
+
+    # Let's try to count the number of tables. Anything above 0 means that there
+    # is some database in place. If there is anything, we abort.
+    run_command \
+        pgsql_execute "\d"
+    if [ "${EXIT_CODE}" -ne 0 ]; then
+        log_error "pgsql_init: table query failed, status code: ${EXIT_CODE}?"
+        exit 1
+    fi
+
+    count=$(printf '%s' "${OUTPUT}" | wc -w)
+    if [ "${count}" -gt 0 ]; then
+        # Let's start with a new line. pgsql could have printed something out.
+        printf '\n'
+        log_error "Expected empty database ${db_name}. Aborting, the following tables are present:
+        ${OUTPUT}"
+        exit 2
+    fi
+
+    init_script="$scripts_dir/pgsql/dhcpdb_create.pgsql"
+    printf "Initializing database using script %s\n" $init_script
+    run_command \
+        pgsql_execute_script $init_script
+    if [ "${EXIT_CODE}" -ne 0 ]; then
+        log_error "Database initialization failed, status code: ${EXIT_CODE}?"
+        exit 1
+    fi
+
+    version=$(checked_pgsql_version)
+    printf "Database version reported after initialization: %s\n" "$version"
+    exit 0
+}
+
+### Functions that implement database version checking commands
+memfile_version() {
+    # @todo Implement this?
+    log_error "NOT IMPLEMENTED"
+    exit 1
+}
+
+### Functions used for upgrade
+memfile_upgrade() {
+    # Useless as Kea converts CSV versions at startup.
+    log_error "NOT IMPLEMENTED"
+    exit 1
+}
+
+# Upgrades existing MySQL database installation. The idea is that
+# it will go over all upgrade scripts from (prefix)/share/kea/scripts/mysql
+# and run them one by one. They will be named properly, so they will
+# be run in order.
+#
+# This function prints version before and after upgrade.
+mysql_upgrade() {
+
+    printf "Database version reported before upgrade: "
+    checked_mysql_version
+    printf '\n'
+
+    upgrade_scripts_dir=${scripts_dir}/mysql
+
+    # Check if the scripts directory exists at all.
+    if [ ! -d ${upgrade_scripts_dir} ]; then
+        log_error "Invalid scripts directory: ${upgrade_scripts_dir}"
+        exit 1
+    fi
+
+    # Check if there are any files in it
+    num_files=$(find "${upgrade_scripts_dir}" -name 'upgrade*.sh' -type f | wc -l)
+    if [ "$num_files" -eq 0 ]; then
+        upgrade_scripts_dir=/usr/obj/usr/ports/net/kea/work/kea-2.4.1/src/share/database/scripts/mysql
+
+        # Check if the scripts directory exists at all.
+        if [ ! -d ${upgrade_scripts_dir} ]; then
+            log_error "Invalid scripts directory: ${upgrade_scripts_dir}"
+            exit 1
+        fi
+
+        # Check if there are any files in it
+        num_files=$(find "${upgrade_scripts_dir}" -name 'upgrade*.sh' -type f | wc -l)
+    fi
+
+    if [ "$num_files" -eq 0 ]; then
+        log_error "No scripts in ${upgrade_scripts_dir} or the directory is not readable or does not have any upgrade* scripts."
+        exit 1
+    fi
+
+    # Beginning with MySQL 8.0, the db user needs additional settings or SUPER
+    # privileges to create triggers and or functions. Call mysql_can_create to find
+    # out if we're good to go.  If not, it will exit.
+    printf "Verifying upgrade permissions for %s\n" "$db_user"
+    mysql_can_create
+
+    for script in "${upgrade_scripts_dir}"/upgrade*.sh
+    do
+        echo "Processing $script file..."
+        "${script}" --host="${db_host}" --user="${db_user}" \
+        --password="${db_password}" "${db_name}" ${extra_arguments}
+    done
+
+    printf "Database version reported after upgrade: "
+    checked_mysql_version
+    printf '\n'
+}
+
+pgsql_upgrade() {
+    version=$(checked_pgsql_version)
+    printf "Database version reported before upgrade: %s\n" "$version"
+
+    upgrade_scripts_dir=${scripts_dir}/pgsql
+
+    # Check if the scripts directory exists at all.
+    if [ ! -d ${upgrade_scripts_dir} ]; then
+        log_error "Invalid scripts directory: ${upgrade_scripts_dir}"
+        exit 1
+    fi
+
+    # Check if there are any files in it
+    num_files=$(find "${upgrade_scripts_dir}" -name 'upgrade*.sh' -type f | wc -l)
+    if [ "$num_files" -eq 0 ]; then
+        upgrade_scripts_dir=/usr/obj/usr/ports/net/kea/work/kea-2.4.1/src/share/database/scripts/pgsql
+
+        # Check if the scripts directory exists at all.
+        if [ ! -d ${upgrade_scripts_dir} ]; then
+            log_error "Invalid scripts directory: ${upgrade_scripts_dir}"
+            exit 1
+        fi
+
+        # Check if there are any files in it
+        num_files=$(find "${upgrade_scripts_dir}" -name 'upgrade*.sh' -type f | wc -l)
+    fi
+
+    if [ "$num_files" -eq 0 ]; then
+        log_error "No scripts in ${upgrade_scripts_dir} or the directory is not readable or does not have any upgrade* scripts."
+        exit 1
+    fi
+
+    # Postgres psql does not accept pw on command line, but can do it
+    # thru an env
+    export PGPASSWORD=$db_password
+
+    for script in "${upgrade_scripts_dir}"/upgrade*.sh
+    do
+        echo "Processing $script file..."
+        "${script}" -U "${db_user}" -h "${db_host}" \
+        -d "${db_name}" ${extra_arguments}
+    done
+
+    version=$(checked_pgsql_version)
+    printf "Database version reported after upgrade: %s\n" "$version"
+    exit 0
+}
+
+# Remove a file if it exists
+remove_file () {
+    local file="${1}"
+    if [ -e "${file}" ]
+    then
+        log_info "Removing file ${file}..."
+        rm -f "${file}"
+    fi
+}
+
+# Utility function which tests if the given file exists and
+# if so notifies the user and provides them the opportunity
+# to abort the current command.
+check_file_overwrite () {
+    local file="${1}"
+    if [ $assume_yes -eq 1 ]
+    then
+        remove_file "${file}"
+    elif [ -e "${file}" ]
+    then
+        echo "Output file, $file, exists and will be overwritten."
+        echo "Do you wish to continue? (y/N)"
+
+        # Ask for an answer only on an interactive shell to prevent blocking in
+        # automated or non-interactive scenarios where the answer defaults to no.
+        if test -t 0; then
+            read -r ans
+        else
+            log_warning 'Non-interactive tty detected. Assuming no.'
+            ans='N'
+        fi
+
+        if [ "${ans}" != "y" ]
+        then
+            echo "$command aborted by user."
+            exit 1
+        fi
+    fi
+}
+
+### Functions used for dump
+
+# Sets the global variable, dump_qry, to the schema-version specific
+# SQL text needed to dump the lease data for the current backend
+# and protocol
+get_dump_query() {
+    local version="${1}"
+
+    case ${backend} in
+    mysql)
+        invoke="call"
+        ;;
+    pgsql)
+        invoke="select * from"
+        ;;
+    *)
+        log_error "unsupported backend ${backend}"
+        usage
+        exit 1
+        ;;
+    esac
+
+    dump_qry="${invoke} lease${dhcp_version}DumpHeader();${invoke} lease${dhcp_version}DumpData();";
+}
+
+memfile_dump() {
+    log_error "lease-dump is not supported for memfile"
+    exit 1
+}
+
+mysql_dump() {
+
+    # Check the lease type was given
+    if [ ${dhcp_version} -eq 0 ]; then
+        log_error "lease-dump: lease type ( -4 or -6 ) needs to be specified"
+        usage
+        exit 1
+    fi
+
+    # get the correct dump query
+    run_command \
+        mysql_version
+    version="${OUTPUT}"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "lease-dump: mysql_version failed, exit code ${EXIT_CODE}"
+        exit 1
+    fi
+
+    # Fetch the correct SQL text. Note this function will exit
+    # if it fails.
+    get_dump_query "$version"
+
+    # Make sure they specified a file
+    if [ "$dump_file" = "" ]; then
+        log_error "you must specify an output file for lease-dump"
+        usage
+        exit 1
+
+    fi
+
+    # If output file exists, notify user, allow them a chance to bail
+    check_file_overwrite "$dump_file"
+
+    # Check the temp file too
+    tmp_file="/tmp/$(basename "${dump_file}").tmp"
+    check_file_overwrite $tmp_file
+
+    # Run the sql to output tab-delimited lease data to a temp file.
+    # By using a temp file we can check for MySQL errors before using
+    # 'tr' to translate tabs to commas.  We do not use MySQL's output
+    # to file as that requires linux superuser privileges to execute
+    # the select.
+    if ! mysql_execute "${dump_qry}" > $tmp_file; then
+        log_error "lease-dump: mysql_execute failed, exit code ${EXIT_CODE}"
+        exit 1
+    fi
+
+    # Now translate tabs to commas.
+    if ! tr '\t' ',' < "${tmp_file}" > "${dump_file}"; then
+        log_error "lease-dump: reformatting failed";
+        exit 1
+    fi
+
+    # Clean up the temporary file.
+    rm -f "${tmp_file}"
+    log_info "Removed temporary file ${tmp_file}."
+
+    log_info "Successfully dumped lease${dhcp_version} to ${dump_file}."
+    exit 0
+}
+
+### Functions used for dump
+pgsql_dump() {
+    # Check the lease type was given
+    if [ ${dhcp_version} -eq 0 ]; then
+        log_error "lease-dump: lease type ( -4 or -6 ) needs to be specified"
+        usage
+        exit 1
+    fi
+
+    version=$(pgsql_version)
+    get_dump_query "$version"
+
+    # Make sure they specified a file
+    if [ "$dump_file" = "" ]; then
+        log_error "you must specify an output file for lease-dump"
+        usage
+        exit 1
+
+    fi
+
+    # If output file exists, notify user, allow them a chance to bail
+    check_file_overwrite "$dump_file"
+
+    # psql does not accept password as a parameter but will look in the environment
+    export PGPASSWORD=$db_password
+
+    # Call psql and redirect output to the dump file. We don't use psql "to csv"
+    # as it can only be run as db superuser. Check for errors.
+    if ! (
+        echo "${dump_qry}" | \
+            psql --set ON_ERROR_STOP=1 -t -h "${db_host}" -q --user="${db_user}" \
+            --dbname="${db_name}" -w --no-align --field-separator=',' \
+            ${extra_arguments} > "${dump_file}"
+    ); then
+        log_error "lease-dump: psql call failed, exit code: ${?}"
+        exit 1
+    fi
+
+    echo lease${dhcp_version} successfully dumped to "${dump_file}"
+    exit 0
+}
+
+######################## functions used in lease-upload ########################
+
+# Finds the position of a column by name, starting with 1.
+get_column_position() {
+    local column_name="${1}"; shift
+
+    # Look only in the header, count the number of commas up to the column.
+    position=$(head -n 1 "${input_file}" | grep -Eo ",|${column_name}" | uniq -c | \
+        head -n 1 | grep ',' | tr -s ' ' | cut -d ' ' -f 2)
+
+    if test -z "${position}"; then
+        # If no commas, that means position 1.
+        printf '1'
+    else
+        # Else increment, so that it starts at 1.
+        printf '%s' "$((position + 1))"
+    fi
+}
+
+# Adds quotes around values at given positions starting with 1 in a CSV line.
+stringify_positions_in_line() {
+    local positions="${1}"; shift
+    local line="${1}"; shift
+
+    i=1
+    output=
+    for p in ${positions}; do
+        # Get everything up to position p.
+        if test "${i}" -lt "${p}"; then
+            up_until_p=$(printf '%s' "${line}" | cut -d ',' -f "${i}-$((p - 1))")
+        else
+            up_until_p=''
+        fi
+
+        # Get value at position p.
+        p_word=$(printf '%s' "${line}" | cut -d ',' -f "${p}")
+
+        # Add comma unless we're doing the first append.
+        if test "${i}" != 1; then
+            output="${output},"
+        fi
+
+        # Append everything up to position p.
+        output="${output}${up_until_p}"
+
+        # Add comma if we're not stringifying position 1 and if there is
+        # anything up to position p. In the second case, the comma was already
+        # added at a previous step.
+        if test "${p}" != 1 && test -n "${up_until_p}"; then
+            output="${output},"
+        fi
+
+        # Add value at position p.
+        output="${output}'${p_word}'"
+
+        # Skip position p when getting the values between positions next time.
+        i=$((p + 1))
+    done
+
+    # The last position might be somewhere in the middle, so add everything
+    # until the end.
+    the_rest=$(printf '%s' "${line}" | cut -d ',' -f ${i}-)
+
+    # Add comma unless we're adding the whole line or nothing.
+    if test "${i}" != 1 && test -n "${the_rest}"; then
+        output="${output},"
+    fi
+
+    # Append.
+    output="${output}${the_rest}"
+
+    # Print back to the caller.
+    printf '%s' "${output}"
+}
+
+# Entry point for the lease-upload command.
+lease_upload() {
+    # Check the lease type was given
+    if [ ${dhcp_version} -eq 0 ]; then
+        log_error "lease-upload: lease type ( -4 or -6 ) needs to be specified"
+        usage
+        exit 1
+    fi
+
+    # Check that an input file was specified.
+    if test -z "${input_file-}"; then
+        log_error 'you must specify an input file with -i or --input for lease-upload'
+        usage
+        exit 1
+    fi
+
+    # Check that the input file has at least one row of values.
+    input_file_line_length=$(wc -l < "${input_file}")
+    if test "${input_file_line_length}" -le 1; then
+        log_error 'CSV file has no leases'
+        exit 1
+    fi
+
+    # Invoke LFC on the input file.
+    log_info "Looking at ${input_file_line_length} lines of CSV in ${input_file}..."
+    cleaned_up_csv="/tmp/$(basename "${input_file}").tmp"
+    check_file_overwrite "${cleaned_up_csv}"
+    cp "${input_file}" "${cleaned_up_csv}"
+    "${kea_lfc}" "-${dhcp_version}" -x "${cleaned_up_csv}" \
+        -i "${cleaned_up_csv}.1" -o "${cleaned_up_csv}.output" \
+        -f "${cleaned_up_csv}.completed" -p "${cleaned_up_csv}.pid" \
+        -cignored-path
+    cleaned_up_csv_line_length=$(wc -l < "${cleaned_up_csv}")
+    log_info "Reduced to ${cleaned_up_csv_line_length} lines in ${cleaned_up_csv}."
+
+    # Determine the columns whose values need to be stringified to avoid syntax
+    # errors in the MySQL client. These are columns which are VARCHARs or need
+    # to be further processed by a procedure.
+    if test "${dhcp_version}" = '4'; then
+        string_columns='address hwaddr client_id hostname user_context'
+    else
+        string_columns='address duid hostname hwaddr user_context'
+    fi
+
+    # Get positions of string columns.
+    string_positions=
+    for i in ${string_columns}; do
+        string_positions="${string_positions} $(get_column_position "${i}")"
+    done
+
+    # Construct the SQL insert statements.
+    header_parsed=false
+    sql_statement='START TRANSACTION;'
+    while read -r line; do
+        if "${header_parsed}"; then
+            line=$(stringify_positions_in_line "${string_positions}" "${line}")
+            if test "${backend}" = 'mysql'; then
+                sql_statement="${sql_statement} CALL lease${dhcp_version}Upload(${line}); "
+            elif test "${backend}" = 'pgsql'; then
+                sql_statement="${sql_statement} SELECT lease${dhcp_version}Upload(${line}); "
+            else
+                log_error "lease-upload not implemented for ${backend}"
+                exit 1
+            fi
+        else
+            header_parsed=true
+        fi
+    done < "${cleaned_up_csv}"
+    sql_statement="${sql_statement} COMMIT;"
+
+    # Execute the SQL insert statements.
+    if test "${backend}" = 'mysql'; then
+        output="$(mysql_execute "${sql_statement}")"
+    elif test "${backend}" = 'pgsql'; then
+        output="$(pgsql_execute "${sql_statement}")"
+    else
+        log_error "lease-upload not implemented for ${backend}"
+        exit 1
+    fi
+
+    # Clean up the temporary CSV.
+    rm -f "${cleaned_up_csv}"
+    log_info "Removed temporary file ${cleaned_up_csv}."
+
+    # Print a confirmation message.
+    log_info "Successfully updated table lease${dhcp_version}."
+}
+
+### Functions used for recounting statistics
+mysql_recount() {
+    printf "Recount lease statistics from database\n"
+
+    run_command \
+        mysql_execute "$_RECOUNT4_QUERY"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "mysql failed to recount IPv4 leases, mysql status = ${EXIT_CODE}"
+        exit 1
+    fi
+
+    run_command \
+        mysql_execute "$_RECOUNT6_QUERY"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "mysql failed to recount IPv6 leases, mysql status = ${EXIT_CODE}"
+        exit 1
+    fi
+}
+
+pgsql_recount() {
+    printf "Recount lease statistics from database\n"
+
+    run_command \
+        pgsql_execute "$_RECOUNT4_QUERY"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "pgsql failed to recount IPv4 leases, pgsql status = ${EXIT_CODE}"
+        exit 1
+    fi
+
+    run_command \
+        pgsql_execute "$_RECOUNT6_QUERY"
+    if [ "${EXIT_CODE}" -ne 0 ]
+    then
+        log_error "pgsql failed to recount IPv6 leases, pgsql status = ${EXIT_CODE}"
+        exit 1
+    fi
+}
+
+### Script starts here ###
+
+# First, find what the command is
+command=${1-}
+if [ -z "${command}" ]; then
+    log_error "missing command"
+    usage
+    exit 1
+fi
+
+# Check if this is a simple question about version.
+if test "${command}" = "-v" || test "${command}" = "--version" ; then
+    echo "${VERSION}"
+    exit 0
+fi
+
+is_in_list "${command}" "db-init db-version db-upgrade lease-dump lease-upload stats-recount"
+if [ "${_inlist}" -eq 0 ]; then
+    log_error "invalid command: ${command}"
+    usage
+    exit 1
+fi
+shift
+
+# Second, check what's the backend
+backend=${1-}
+if [ -z "${backend}" ]; then
+    log_error "missing backend"
+    usage
+    exit 1
+fi
+is_in_list "${backend}" "memfile mysql pgsql"
+if [ "${_inlist}" -eq 0 ]; then
+    log_error "invalid backend: ${backend}"
+    exit 1
+fi
+shift
+
+# Ok, let's process parameters (if there are any)
+while test "${#}" -gt 0
+do
+    option=${1}
+    case ${option} in
+        # Specify database host
+        -h|--host)
+            shift
+            db_host=${1-}
+            if [ -z "${db_host}" ]; then
+                log_error "-h or --host requires a parameter"
+                usage
+                exit 1
+            fi
+            ;;
+        # Specify database port
+        -P|--port)
+            shift
+            if test -z "${1+x}"; then
+                log_error '-P or --port requires a parameter'
+                usage
+                exit 1
+            fi
+            db_port=${1}
+            export db_port_full_parameter="--port=${db_port}"
+            ;;
+        # Specify database user
+        -u|--user)
+            shift
+            db_user=${1-}
+            if [ -z "${db_user}" ]; then
+                log_error "-u or --user requires a parameter"
+                usage
+                exit 1
+            fi
+            ;;
+        # Specify database password
+        -p|--password)
+            password_parameter_passed=true
+            # If there is at least one more parameter following...
+            if test "${#}" -gt 1; then
+                # Then take it as password.
+                shift
+                db_password=${1}
+            else
+                # If it's an interactive shell...
+                if test -t 0; then
+                    # Read from standard input while hiding feedback to the terminal.
+                    printf 'Password: '
+                    stty -echo
+                    read -r db_password
+                    stty echo
+                    printf '\n'
+                else
+                    log_warning 'Non-interactive tty detected. Assuming empty password.'
+                    db_password=''
+                fi
+            fi
+            ;;
+        # Specify database name
+        -n|--name)
+            shift
+            db_name=${1-}
+            if [ -z "${db_name}" ]; then
+                log_error "-n or --name requires a parameter"
+                usage
+                exit 1
+            fi
+            ;;
+        -d|--directory)
+            shift
+            scripts_dir=${1-}
+            if [ -z "${scripts_dir}" ]; then
+                log_error "-d or --directory requires a parameter"
+                usage
+                exit 1
+            fi
+            ;;
+        # specify DHCPv4 lease type
+        -4)
+            if [ ${dhcp_version} -eq 6 ]; then
+                log_error "you may not specify both -4 and -6"
+                usage
+                exit 1
+            fi
+            dhcp_version=4
+            ;;
+        # specify DHCPv6 lease type
+        -6)
+            if [ ${dhcp_version} -eq 4 ]; then
+                log_error "you may not specify both -4 and -6"
+                usage
+                exit 1
+            fi
+            dhcp_version=6
+            ;;
+        # specify input file, used by lease-upload
+        -i|--input)
+            shift
+            input_file=${1-}
+            if [ -z "${input_file}" ]; then
+                log_error '-i or --input requires a parameter'
+                usage
+                exit 1
+            fi
+            ;;
+        # specify output file, currently only used by lease dump
+        -o|--output)
+            shift
+            dump_file=${1-}
+            if [ -z "${dump_file}" ]; then
+                log_error "-o or --output requires a parameter"
+                usage
+                exit 1
+            fi
+            ;;
+        # specify extra arguments to pass to the database command
+        -x|--extra)
+            shift
+            if [ -z "${1-}" ]; then
+                log_error "-x or --extra requires a parameter"
+                usage
+                exit 1
+            fi
+            if [ -z "${extra_arguments}" ]; then
+                extra_arguments=${1}
+            else
+                extra_arguments="${extra_arguments} ${1}"
+            fi
+            ;;
+        -y|--yes)
+            assume_yes=1
+            ;;
+        *)
+            log_error "invalid option: ${option}"
+            usage
+            exit 1
+    esac
+    shift
+done
+
+# After all the parameters have been parsed, check environment variables.
+if test -z "${password_parameter_passed+x}"; then
+    if test -n "${KEA_ADMIN_DB_PASSWORD+x}"; then
+        printf 'Using the value of KEA_ADMIN_DB_PASSWORD for authentication...\n'
+        db_password="${KEA_ADMIN_DB_PASSWORD}"
+    fi
+fi
+
+case ${command} in
+    # Initialize the database
+    db-init)
+        case ${backend} in
+            memfile)
+                memfile_init
+                ;;
+            mysql)
+                mysql_init
+                ;;
+            pgsql)
+                pgsql_init
+                ;;
+            esac
+        ;;
+    db-version)
+        case ${backend} in
+            memfile)
+                memfile_version
+                ;;
+            mysql)
+                checked_mysql_version
+                printf '\n'
+                ;;
+            pgsql)
+                checked_pgsql_version
+                ;;
+            esac
+        ;;
+    db-upgrade)
+        case ${backend} in
+            memfile)
+                memfile_upgrade
+                ;;
+            mysql)
+                mysql_upgrade
+                ;;
+            pgsql)
+                pgsql_upgrade
+                ;;
+            esac
+        ;;
+    lease-dump)
+        case ${backend} in
+            memfile)
+                memfile_dump
+                ;;
+            mysql)
+                mysql_dump
+                ;;
+            pgsql)
+                pgsql_dump
+                ;;
+            esac
+        ;;
+    lease-upload)
+        case ${backend} in
+            memfile)
+                log_error 'lease-upload is not supported for memfile'
+                exit 1
+                ;;
+            mysql)
+                lease_upload
+                ;;
+            pgsql)
+                lease_upload
+                ;;
+            esac
+        ;;
+    stats-recount)
+        case ${backend} in
+            memfile)
+                log_info "memfile does not keep lease statistics"
+                ;;
+            mysql)
+                mysql_recount
+                ;;
+            pgsql)
+                pgsql_recount
+                ;;
+            esac
+        ;;
+esac
+
+exit 0

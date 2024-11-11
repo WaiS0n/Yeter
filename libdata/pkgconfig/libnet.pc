@@ -1,0 +1,14 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libnet
+Version: 1.3
+Description: Portable Packet Construction and Injection API
+URL: https://github.com/libnet/libnet
+
+Requires: 
+Libs: -L${libdir} -lnet 
+Cflags: -I${includedir} -DHAVE_SOCKADDR_SA_LEN 
+
